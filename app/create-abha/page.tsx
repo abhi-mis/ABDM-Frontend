@@ -47,8 +47,8 @@ export default function CreateAbha() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-10">
+                <div className="space-y-6">
                   <Label htmlFor="aadhaar" className="text-lg font-medium text-gray-700">
                     Aadhaar Number
                   </Label>
@@ -70,12 +70,14 @@ export default function CreateAbha() {
                   </p>
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full h-14 text-lg rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 transition-all duration-300"
-                >
-                  Continue
-                </Button>
+                <div className="flex justify-end pt-4">
+                  <Button 
+                    type="submit" 
+                    className="text-lg px-8 py-6 rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 transition-all duration-200"
+                  >
+                    Continue
+                  </Button>
+                </div>
               </form>
             </CardContent>
           </Card>

@@ -10,56 +10,78 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ProgressSteps } from "@/app/components/progress-steps";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function AbhaAddress() {
+export default function CreateAbha() {
   const router = useRouter();
-  const [address, setAddress] = useState("");
+  const [aadhaar, setAadhaar] = useState("");
+
+  const steps = [
+    { title: "Create ABHA", status: "current" as const },
+    { title: "Aadhaar Authentication", status: "upcoming" as const },
+    { title: "Communication Details", status: "upcoming" as const },
+    { title: "ABHA Address Creation", status: "upcoming" as const },
+    { title: "Download Card", status: "upcoming" as const },
+  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push("/download-card");
+    router.push("/verify-aadhaar");
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-16 px-4">
-      <div className="max-w-md mx-auto">
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl">Create ABHA Address</CardTitle>
-            <CardDescription>
-              Choose a unique ABHA address that will be used to access your health
-              records
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="address">ABHA Address</Label>
-                <div className="relative">
+    <div className="min-h-screen py-12 px-4">
+      <div className="container mx-auto">
+        <ProgressSteps currentStep={0} steps={steps} />
+        
+        <div className="max-w-xl mx-auto mt-12">
+          <Card className="glass-card">
+            <CardHeader className="text-center space-y-4 pb-8">
+              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+                Create ABHA Number
+              </CardTitle>
+              <CardDescription className="text-lg text-gray-600">
+                Enter your Aadhaar number to begin the ABHA creation process
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-10">
+                <div className="space-y-6">
+                  <Label htmlFor="aadhaar" className="text-lg font-medium text-gray-700">
+                    Aadhaar Number
+                  </Label>
                   <Input
-                    id="address"
-                    placeholder="yourname"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value.toLowerCase())}
+                    id="aadhaar"
+                    placeholder="XXXX XXXX XXXX"
+                    value={aadhaar}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "");
+                      if (value.length <= 12) {
+                        setAadhaar(value.replace(/(\d{4})(?=\d)/g, "$1 "));
+                      }
+                    }}
                     required
-                    className="pr-20"
+                    className="h-14 text-lg tracking-wide text-center border-2 bg-white/80 shadow-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-200"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
-                    @abha
-                  </span>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Please enter your 12-digit Aadhaar number
+                  </p>
                 </div>
-                <p className="text-sm text-gray-500">
-                  Your ABHA address will be: {address}@abha
-                </p>
-              </div>
-              <Button type="submit" className="w-full">
-                Create ABHA Address
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+
+                <div className="flex justify-end pt-4">
+                  <Button 
+                    type="submit" 
+                    className="text-lg px-8 py-6 rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 transition-all duration-200"
+                  >
+                    Continue
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
