@@ -1,103 +1,119 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Shield, Smartphone, UserCheck, UserPlus } from "lucide-react";
-import { ProgressSteps } from "@/app/components/progress-steps";
-import Link from "next/link";
+import { useState } from 'react';
+import ProgressBar from '@/components/ProgressBar';
+import WelcomePage from '@/components/WelcomePage';
+import AadharRegistration from '@/components/AadharRegistration';
+import AadharVerification from '@/components/AadharVerification';
+import ProfileSection from '@/components/ProfileSection';
+
+const steps = [
+  {
+    id: 1,
+    name: 'Welcome',
+    description: 'Get Started',
+  },
+  {
+    id: 2,
+    name: 'Aadhar Registration',
+    description: 'Enter your Aadhar details',
+  },
+  {
+    id: 3,
+    name: 'Verification',
+    description: 'Verify your Aadhar',
+  },
+  {
+    id: 4,
+    name: 'Profile',
+    description: 'Complete your profile',
+  },
+];
 
 export default function Home() {
-  const steps = [
-    { title: "Create ABHA", status: "current" as const },
-    { title: "Aadhaar Authentication", status: "upcoming" as const },
-    { title: "Communication Details", status: "upcoming" as const },
-    { title: "ABHA Address Creation", status: "upcoming" as const },
-    { title: "Download Card", status: "upcoming" as const },
-  ];
+  const [currentStep, setCurrentStep] = useState(1);
+  const [formData, setFormData] = useState({
+    accessToken: '',
+    aadharNumber: '',
+    otp: '',
+    profile: {
+      name: '',
+      dob: '',
+      gender: '',
+      mobile: '',
+      email: '',
+    },
+  });
 
-  const features = [
-    {
-      icon: <UserPlus className="h-6 w-6" />,
-      title: "Create ABHA",
-      description: "Create your ABHA number using Aadhaar",
-      href: "/create-abha",
-    },
-    {
-      icon: <UserCheck className="h-6 w-6" />,
-      title: "Verify Aadhaar",
-      description: "Enter and verify your Aadhaar details",
-      href: "/verify-aadhaar",
-    },
-    {
-      icon: <Smartphone className="h-6 w-6" />,
-      title: "Mobile Verification",
-      description: "Verify OTP and link mobile number",
-      href: "/verify-mobile",
-    },
-    {
-      icon: <Shield className="h-6 w-6" />,
-      title: "ABHA Address",
-      description: "Create your unique ABHA address",
-      href: "/abha-address",
-    },
-    {
-      icon: <FileText className="h-6 w-6" />,
-      title: "Download Card",
-      description: "Download your ABHA card",
-      href: "/download-card",
-    },
-  ];
+  const handleNext = () => {
+    setCurrentStep((prev) => Math.min(prev + 1, steps.length));
+  };
+
+  const handleBack = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 1));
+  };
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <WelcomePage
+            formData={formData}
+            setFormData={setFormData}
+            onNext={handleNext}
+          />
+        );
+      case 2:
+        return (
+          <AadharRegistration
+            formData={formData}
+            setFormData={setFormData}
+            onNext={handleNext}
+            onBack={handleBack}
+          />
+        );
+      case 3:
+        return (
+          <AadharVerification
+            formData={formData}
+            setFormData={setFormData}
+            onNext={handleNext}
+            onBack={handleBack}
+          />
+        );
+      case 4:
+        return (
+          <ProfileSection
+            formData={formData}
+            setFormData={setFormData}
+            onBack={handleBack}
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
-    <main className="min-h-screen py-12 px-4">
-      <div className="container mx-auto">
-        <ProgressSteps currentStep={0} steps={steps} />
-
-        <div className="max-w-4xl mx-auto text-center mb-16">
-          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
-            Create Your ABHA Number
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
+            Create Your ABHA Card
           </h1>
-          <p className="text-xl text-blue-100 max-w-2xl mx-auto">
-            Your unified health ID for accessing healthcare services across India.
-            Complete the following steps to get your ABHA card.
+          <p className="text-lg text-gray-600">
+            Your gateway to unified digital health records
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {features.map((feature, index) => (
-            <Link href={feature.href} key={index} className="transform hover:scale-105 transition-all duration-300">
-              <Card className="glass-card h-full border-0 overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-white/5 group-hover:opacity-100 opacity-0 transition-opacity duration-300" />
-                <CardHeader>
-                  <div className="flex items-center gap-4">
-                    <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/20">
-                      {feature.icon}
-                    </div>
-                    <CardTitle className="text-2xl">
-                      Step {index + 1}: {feature.title}
-                    </CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-lg text-gray-600">{feature.description}</p>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
+        <ProgressBar steps={steps} currentStep={currentStep} />
 
-        <div className="text-center mt-16">
-          <Button
-            asChild
-            size="lg"
-            className="text-lg px-12 py-8 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-xl shadow-blue-500/30 hover:shadow-blue-500/40 transition-all duration-300"
-          >
-            <Link href="/create-abha">
-              Start Registration
-            </Link>
-          </Button>
+        <div className="mt-8">
+          <div className="bg-white rounded-2xl shadow-xl p-8 backdrop-blur-lg bg-opacity-90 border border-gray-100">
+            {renderStepContent()}
+          </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }
