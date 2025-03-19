@@ -1,7 +1,6 @@
-'use client';
-
 import { useState } from 'react';
 import { CreditCard, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface AadharRegistrationProps {
   formData: any;
@@ -31,7 +30,7 @@ export default function AadharRegistration({
         throw new Error('Access token not found. Please try again.');
       }
 
-      const response = await fetch('https://abdm-backend.onrender.com/api/send-otp', {
+      const response = await fetch('http://localhost:5000/api/send-otp', {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -49,6 +48,18 @@ export default function AadharRegistration({
 
       const data = await response.json();
       
+      // Save txnId to session storage
+      if (data.txnId) {
+        sessionStorage.setItem('txnId', data.txnId);
+      }
+
+      // Show success toast with the message from the response
+      toast.success(data.message || 'OTP sent successfully!', {
+        duration: 4000,
+        position: 'top-center',
+        icon: '📱'
+      });
+
       // Save all response data to formData
       setFormData({
         ...formData,
@@ -57,8 +68,12 @@ export default function AadharRegistration({
 
       onNext();
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send OTP. Please try again.';
+      toast.error(errorMessage, {
+        duration: 4000,
+        position: 'top-center'
+      });
       console.error('Error sending OTP:', error);
-      alert(error instanceof Error ? error.message : 'Failed to send OTP. Please try again.');
     } finally {
       setIsLoading(false);
     }

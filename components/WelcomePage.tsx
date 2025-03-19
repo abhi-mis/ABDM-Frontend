@@ -19,7 +19,7 @@ export default function WelcomePage({
   const handleGetStarted = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('https://abdm-backend.onrender.com/api/access-token', {
+      const response = await fetch('http://localhost:5000/api/access-token', {
         method: 'GET',
         headers: {
           "Content-Type": "application/json",
