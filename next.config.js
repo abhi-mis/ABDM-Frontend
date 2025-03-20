@@ -7,4 +7,7 @@ const nextConfig = {
   images: { unoptimized: true },
 };
 
-module.exports = nextConfig;
+module.exports = {
+  reactStrictMode: true,
+  // Ensure no basePath or custom routes are misconfigured
+};
