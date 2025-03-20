@@ -4,10 +4,11 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  images: { unoptimized: true },
+  images: {
+    unoptimized: true,
+    domains: ['upload.wikimedia.org'], // Add the domain here
+  },
+  reactStrictMode: true,
 };
 
-module.exports = {
-  reactStrictMode: true,
-  // Ensure no basePath or custom routes are misconfigured
-};
+module.exports = nextConfig;

@@ -6,6 +6,7 @@ import WelcomePage from '@/components/WelcomePage';
 import AadharRegistration from '@/components/AadharRegistration';
 import AadharVerification from '@/components/AadharVerification';
 import ProfileSection from '@/components/ProfileSection';
+import { motion } from 'framer-motion';
 
 const steps = [
   {
@@ -36,16 +37,15 @@ export default function Home() {
     accessToken: '',
     aadharNumber: '',
     otp: '',
-    mobile: '',  // <-- Add this line
+    mobile: '',
     profile: {
       name: '',
       dob: '',
       gender: '',
-      mobile: '',  // This can stay if profile also needs mobile
+      mobile: '',
       email: '',
     },
   });
-  
 
   const handleNext = () => {
     setCurrentStep((prev) => Math.min(prev + 1, steps.length));
@@ -97,24 +97,53 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-3xl -top-48 -left-24 animate-pulse"></div>
+        <div className="absolute w-[400px] h-[400px] bg-purple-500/20 rounded-full blur-3xl top-96 right-12 animate-pulse delay-700"></div>
+        <div className="absolute w-[600px] h-[600px] bg-pink-500/20 rounded-full blur-3xl -bottom-32 left-1/2 animate-pulse delay-1000"></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-12 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12"
+        >
+          <div className="inline-flex items-center px-6 py-2 rounded-full bg-white/10 backdrop-blur-lg border border-white/20 mb-6">
+            <span className="text-white/90">ABHA Card Registration Portal</span>
+          </div>
+          <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 animate-gradient mb-4">
             Create Your ABHA Card
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-white/80 max-w-2xl mx-auto">
             Your gateway to unified digital health records
           </p>
-        </div>
+        </motion.div>
 
-        <ProgressBar steps={steps} currentStep={currentStep} />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          <ProgressBar steps={steps} currentStep={currentStep} />
+        </motion.div>
 
-        <div className="mt-8">
-          <div className="bg-white rounded-2xl shadow-xl p-8 backdrop-blur-lg bg-opacity-90 border border-gray-100">
-            {renderStepContent()}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="mt-8"
+        >
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-3xl blur-xl"></div>
+            <div className="relative bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8">
+              {renderStepContent()}
+            </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

@@ -1,170 +1,177 @@
-'use client';
-
-import { User } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { User, Loader2, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
+import { url } from 'node:inspector';
 
 interface ProfileSectionProps {
-  formData: any;
-  setFormData: (data: any) => void;
   onBack: () => void;
 }
 
-export default function ProfileSection({
-  formData,
-  setFormData,
-  onBack,
-}: ProfileSectionProps) {
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+interface ProfileData {
+  name?: string;
+  dob?: string;
+  gender?: string;
+  mobile?: string;
+  email?: string;
+  [key: string]: any;
+}
+
+export default function ProfileSection({ onBack }: ProfileSectionProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
+
+  useEffect(() => {
+    fetchProfileData();
+  }, []);
+
+  const fetchProfileData = async () => {
+    setIsLoading(true);
     try {
-      // Here you would typically make an API call to save the profile data
-      alert('Profile created successfully!');
+      const accessToken = sessionStorage.getItem('token');
+      const xToken = sessionStorage.getItem('refreshToken');
+      const url = process.env.NEXT_PUBLIC_API_URL;
+
+      if (!accessToken || !xToken) {
+        throw new Error('Authentication tokens not found');
+      }
+
+      const response = await fetch(`${url}/api/profile`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          accessToken,
+          X_Token: xToken
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch profile');
+      }
+
+      const data = await response.json();
+      setProfileData(data);
     } catch (error) {
-      console.error('Error creating profile:', error);
-      alert('Error creating profile. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch profile';
+      toast.error(errorMessage, {
+        duration: 4000,
+        position: 'top-center'
+      });
+      console.error('Error fetching profile:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      profile: {
-        ...formData.profile,
-        [name]: value,
-      },
-    });
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-purple-500 mx-auto mb-4" />
+          <p className="text-white/80 text-lg">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-md mx-auto">
-      <div className="text-center mb-8">
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-          <User className="text-white w-8 h-8" />
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900">Complete Your Profile</h2>
-        <p className="text-gray-600 mt-2">Fill in your personal details</p>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 space-y-6">
-          <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Full Name
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.profile.name}
-              onChange={handleProfileChange}
-              className="block w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-colors duration-200"
-              required
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="dob"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Date of Birth
-            </label>
-            <input
-              type="date"
-              id="dob"
-              name="dob"
-              value={formData.profile.dob}
-              onChange={handleProfileChange}
-              className="block w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-colors duration-200"
-              required
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="gender"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Gender
-            </label>
-            <select
-              id="gender"
-              name="gender"
-              value={formData.profile.gender}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  profile: { ...formData.profile, gender: e.target.value },
-                })
-              }
-              className="block w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-colors duration-200"
-              required
-            >
-              <option value="">Select gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <div>
-            <label
-              htmlFor="mobile"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Mobile Number
-            </label>
-            <input
-              type="tel"
-              id="mobile"
-              name="mobile"
-              value={formData.profile.mobile}
-              onChange={handleProfileChange}
-              className="block w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-colors duration-200"
-              pattern="[0-9]{10}"
-              maxLength={10}
-              required
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Email Address
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.profile.email}
-              onChange={handleProfileChange}
-              className="block w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-colors duration-200"
-              required
-            />
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="text-center mb-12"
+      >
+        {/* <div className="inline-flex items-center px-6 py-2 rounded-full bg-white/10 backdrop-blur-lg border border-white/20 mb-6">
+          <Sparkles className="w-5 h-5 mr-2 text-yellow-400" />
+          <span className="text-white/90">Your Health Profile</span>
+        </div> */}
+        
+        <div className="relative inline-block">
+          <div className="bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 transform transition-transform hover:scale-110 hover:rotate-3">
+            <User className="text-white w-12 h-12" />
           </div>
         </div>
 
-        <div className="flex justify-between">
-          <button
-            type="button"
-            onClick={onBack}
-            className="px-6 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-          >
-            Back
-          </button>
-          <button
-            type="submit"
-            className="px-6 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105"
-          >
-            Create ABHA Card
-          </button>
-        </div>
-      </form>
+        <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 text-transparent bg-clip-text">
+          {profileData?.name || 'Profile Information'}
+        </h2>
+      </motion.div>
+
+      {profileData && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-white/60 text-sm font-medium mb-1">Full Name</h3>
+                <p className="text-white text-lg">{profileData.name || 'Not provided'}</p>
+              </div>
+              <div>
+                <h3 className="text-white/60 text-sm font-medium mb-1">Date of Birth</h3>
+                <p className="text-white text-lg">
+                  {profileData.dob ? new Date(profileData.dob).toLocaleDateString() : 'Not provided'}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-white/60 text-sm font-medium mb-1">Gender</h3>
+                <p className="text-white text-lg capitalize">{profileData.gender || 'Not provided'}</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-white/60 text-sm font-medium mb-1">Mobile Number</h3>
+                <p className="text-white text-lg">{profileData.mobile || 'Not provided'}</p>
+              </div>
+              <div>
+                <h3 className="text-white/60 text-sm font-medium mb-1">Email Address</h3>
+                <p className="text-white text-lg">{profileData.email || 'Not provided'}</p>
+              </div>
+              {profileData.abhaNumber && (
+                <div>
+                  <h3 className="text-white/60 text-sm font-medium mb-1">ABHA Number</h3>
+                  <p className="text-white text-lg">{profileData.abhaNumber}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-8 pt-8 border-t border-white/10">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-white/60 text-sm font-medium mb-1">Profile Status</h3>
+                <p className="text-white text-lg flex items-center">
+                  <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+                  Active
+                </p>
+              </div>
+              <div>
+                <h3 className="text-white/60 text-sm font-medium mb-1">Last Updated</h3>
+                <p className="text-white text-lg">
+                  {new Date().toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {!profileData && !isLoading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center text-white/80 p-8 bg-white/5 rounded-2xl"
+        >
+          <p>No profile data available</p>
+        </motion.div>
+      )}
     </div>
   );
 }

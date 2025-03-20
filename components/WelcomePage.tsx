@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowRight, Shield, Smartphone, UserCheck, Loader2 } from 'lucide-react';
+import { ArrowRight, Shield, Smartphone, UserCheck, Loader2, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface WelcomePageProps {
   formData: any;
@@ -15,6 +16,7 @@ export default function WelcomePage({
   onNext,
 }: WelcomePageProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 
   const handleGetStarted = async () => {
     try {
@@ -32,11 +34,7 @@ export default function WelcomePage({
       }
       
       const data = await response.json();
-      
-      // Save token to session storage
       sessionStorage.setItem('token', data.access_token);
-      
-      // Update form data with the token
       setFormData({ ...formData, accessToken: data.access_token });
       onNext();
     } catch (error) {
@@ -47,80 +45,115 @@ export default function WelcomePage({
     }
   };
 
+  const features = [
+    {
+      icon: Shield,
+      title: "Military-Grade Security",
+      description: "Your health data is protected with AES-256 encryption and blockchain technology",
+      gradient: "from-cyan-500 to-blue-500",
+      iconBg: "from-cyan-400 to-blue-600"
+    },
+    {
+      icon: Smartphone,
+      title: "Instant Verification",
+      description: "Advanced biometric and OTP verification for maximum security and convenience",
+      gradient: "from-purple-500 to-pink-500",
+      iconBg: "from-purple-400 to-pink-600"
+    },
+    {
+      icon: UserCheck,
+      title: "Universal Health ID",
+      description: "Access your complete medical history with a single digital identity across India",
+      gradient: "from-green-500 to-emerald-500",
+      iconBg: "from-green-400 to-emerald-600"
+    }
+  ];
+
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="text-center mb-16">
-        {/* <div className="inline-block p-2 px-4 bg-blue-100 rounded-full text-blue-700 text-sm font-medium mb-4">
-          Welcome to ABHA
-        </div> */}
-        <h2 className="text-4xl font-bold text-gray-900 mb-4 bg-gradient-to-r from-blue-600 to-purple-600 inline-block text-transparent bg-clip-text">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="text-center mb-16"
+      >
+        <div className="inline-flex items-center px-6 py-2 rounded-full bg-white/10 backdrop-blur-lg border border-white/20 mb-6">
+          <Sparkles className="w-5 h-5 mr-2 text-yellow-400" />
+          <span className="text-white/90">Welcome to the Future of Healthcare</span>
+        </div>
+        
+        <h2 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 text-transparent bg-clip-text animate-gradient">
           ABHA Card Creation Portal
         </h2>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Create your Ayushman Bharat Health Account securely and efficiently
+        
+        <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
+          Experience the next generation of digital healthcare management. Create your Ayushman Bharat Health Account with enhanced security and seamless integration.
         </p>
-      </div>
+      </motion.div>
 
-      <div className="grid md:grid-cols-3 gap-8 mb-16">
-        <div className="bg-white p-8 rounded-2xl shadow-lg transform transition-all duration-300 hover:-translate-y-2">
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-6">
-            <Shield className="text-white w-7 h-7" />
-          </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-3 text-center">
-            Secure Process
-          </h3>
-          <p className="text-gray-600 text-center">
-            Your health data is protected with state-of-the-art encryption and security measures
-          </p>
-        </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="grid md:grid-cols-3 gap-8 mb-16"
+      >
+        {features.map((feature, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 + index * 0.1 }}
+            className="group relative"
+            onMouseEnter={() => setHoverIndex(index)}
+            onMouseLeave={() => setHoverIndex(null)}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 blur-xl transition-all duration-500"></div>
+            <div className={`relative h-full bg-white/10 backdrop-blur-lg p-8 rounded-3xl border border-white/20 transform transition-all duration-500 ${hoverIndex === index ? 'scale-105' : ''}`}>
+              <div className={`bg-gradient-to-br ${feature.iconBg} w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-8 transform transition-transform group-hover:scale-110 group-hover:rotate-3`}>
+                <feature.icon className="text-white w-8 h-8" />
+              </div>
+              <h3 className={`text-2xl font-bold mb-4 text-center bg-gradient-to-r ${feature.gradient} text-transparent bg-clip-text`}>
+                {feature.title}
+              </h3>
+              <p className="text-white/70 text-center leading-relaxed">
+                {feature.description}
+              </p>
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
 
-        <div className="bg-white p-8 rounded-2xl shadow-lg transform transition-all duration-300 hover:-translate-y-2">
-          <div className="bg-gradient-to-br from-purple-500 to-purple-600 w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-6">
-            <Smartphone className="text-white w-7 h-7" />
-          </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-3 text-center">
-            Quick Verification
-          </h3>
-          <p className="text-gray-600 text-center">
-            Seamless OTP-based verification process for hassle-free registration
-          </p>
-        </div>
-
-        <div className="bg-white p-8 rounded-2xl shadow-lg transform transition-all duration-300 hover:-translate-y-2">
-          <div className="bg-gradient-to-br from-green-500 to-green-600 w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-6">
-            <UserCheck className="text-white w-7 h-7" />
-          </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-3 text-center">
-            Digital Health ID
-          </h3>
-          <p className="text-gray-600 text-center">
-            Access your complete health records digitally from anywhere, at any time
-          </p>
-        </div>
-      </div>
-
-      <div className="text-center">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.5 }}
+        className="text-center relative"
+      >
+        <div className="absolute inset-x-0 -top-40 h-40 bg-gradient-to-t from-transparent to-transparent"></div>
         <button
           onClick={handleGetStarted}
           disabled={isLoading}
-          className="inline-flex items-center px-8 py-4 text-lg font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-full hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+          className="group relative inline-flex items-center px-12 py-5 text-lg font-medium text-white bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-full overflow-hidden transition-all duration-500 hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
-          {isLoading ? (
-            <>
-              <Loader2 className="animate-spin mr-2 w-5 h-5" />
-              Initializing...
-            </>
-          ) : (
-            <>
-              Get Started
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </>
-          )}
+          <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl"></div>
+          <span className="relative flex items-center">
+            {isLoading ? (
+              <>
+                <Loader2 className="animate-spin mr-3 w-6 h-6" />
+                Initializing...
+              </>
+            ) : (
+              <>
+                Begin Your Journey
+                <ArrowRight className="ml-3 w-6 h-6 transform group-hover:translate-x-2 transition-transform" />
+              </>
+            )}
+          </span>
         </button>
-        <p className="mt-4 text-sm text-gray-500">
-          Your health, your control. Start your digital health journey today.
+        <p className="mt-6 text-white/60">
+          Join millions of Indians in the digital healthcare revolution
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 }

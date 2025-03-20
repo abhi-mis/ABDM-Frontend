@@ -1,4 +1,5 @@
-'use client';
+import { motion } from 'framer-motion';
+import { CheckCircle } from 'lucide-react';
 
 interface Step {
   id: number;
@@ -13,74 +14,82 @@ interface ProgressBarProps {
 
 export default function ProgressBar({ steps, currentStep }: ProgressBarProps) {
   return (
-    <div className="py-6">
-      <div className="max-w-7xl mx-auto px-4">
-        <nav aria-label="Progress">
-          <ol
-            role="list"
-            className="flex items-center justify-between md:space-x-8"
-          >
-            {steps.map((step, index) => (
-              <li
-                key={step.id}
-                className={`relative ${
-                  index !== steps.length - 1
-                    ? 'flex-1 md:flex-auto'
-                    : 'flex-initial'
-                }`}
+    <div className="py-8">
+      <nav aria-label="Progress">
+        <ol role="list" className="flex items-center justify-between">
+          {steps.map((step, stepIdx) => (
+            <li
+              key={step.id}
+              className="relative flex flex-col items-center"
+            >
+              <motion.div
+                className="relative flex flex-col items-center group"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: stepIdx * 0.1 }}
               >
-                {index !== steps.length - 1 && (
-                  <div
-                    className="absolute left-[50%] top-[50%] h-0.5 w-full"
-                    aria-hidden="true"
+                <motion.div
+                  className="h-20 flex items-center"
+                  initial={{ scale: 0.8 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.3, delay: stepIdx * 0.1 }}
+                >
+                  <motion.div
+                    className={`relative z-10 w-20 h-20 flex items-center justify-center rounded-full ${
+                      step.id < currentStep
+                        ? 'bg-gradient-to-br from-blue-600 to-purple-600 shadow-lg shadow-purple-500/30'
+                        : step.id === currentStep
+                        ? 'bg-white/10 backdrop-blur-lg border-2 border-purple-400 shadow-lg shadow-purple-500/20'
+                        : 'bg-white/5 backdrop-blur-lg'
+                    } transition-all duration-500`}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <div
-                      className={`h-full ${
-                        step.id <= currentStep
-                          ? 'bg-gradient-to-r from-blue-600 to-purple-600'
-                          : 'bg-gray-200'
-                      }`}
-                    />
-                  </div>
-                )}
-                <div className="relative flex flex-col items-center group">
-                  <span className="h-9 flex items-center">
-                    <span
-                      className={`relative z-10 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-300 ${
-                        step.id < currentStep
-                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
-                          : step.id === currentStep
-                          ? 'border-2 border-purple-600 bg-white text-purple-600'
-                          : 'bg-gray-200 text-gray-500'
-                      }`}
-                    >
-                      {step.id < currentStep ? (
-                        <svg
-                          className="w-5 h-5"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      ) : (
-                        step.id
-                      )}
-                    </span>
-                  </span>
-                  <span className="text-sm font-medium text-gray-900 mt-2">
+                    {step.id < currentStep ? (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 200, damping: 10 }}
+                      >
+                        <CheckCircle className="w-10 h-10 text-white" />
+                      </motion.div>
+                    ) : (
+                      <span className={`text-3xl font-bold ${
+                        step.id === currentStep ? 'text-purple-400' : 'text-white/40'
+                      }`}>
+                        {step.id}
+                      </span>
+                    )}
+                  </motion.div>
+                </motion.div>
+
+                <motion.div
+                  className="mt-6 text-center"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5, delay: stepIdx * 0.1 + 0.2 }}
+                >
+                  <motion.span
+                    className={`text-xl font-bold ${
+                      step.id <= currentStep 
+                        ? 'bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 text-transparent bg-clip-text'
+                        : 'text-white/40'
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                  >
                     {step.name}
+                  </motion.span>
+                  <span className={`mt-1 block text-sm ${
+                    step.id <= currentStep ? 'text-white/70' : 'text-white/30'
+                  }`}>
+                    {step.description}
                   </span>
-                  <span className="text-xs text-gray-500">{step.description}</span>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </nav>
-      </div>
+                </motion.div>
+              </motion.div>
+            </li>
+          ))}
+        </ol>
+      </nav>
     </div>
   );
 }
