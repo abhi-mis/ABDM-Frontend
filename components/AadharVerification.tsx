@@ -31,12 +31,12 @@ export default function AadharVerification({
       // Get values from sessionStorage
       const txnId = sessionStorage.getItem('txnId');
       const accessToken = sessionStorage.getItem('token');
-
+      const url = process.env.NEXT_PUBLIC_API_URL;
       if (!txnId || !accessToken) {
         throw new Error('Missing required session data');
       }
 
-      const response = await fetch('http://localhost:5000/api/verify-otp', {
+      const response = await fetch(`${url}/api/verify-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -19,7 +19,8 @@ export default function WelcomePage({
   const handleGetStarted = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:5000/api/access-token', {
+      const url = process.env.NEXT_PUBLIC_API_URL;
+      const response = await fetch(`${url}/api/access-token`, {
         method: 'GET',
         headers: {
           "Content-Type": "application/json",

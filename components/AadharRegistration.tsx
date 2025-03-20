@@ -25,12 +25,13 @@ export default function AadharRegistration({
       
       // Get access token from session storage
       const accessToken = sessionStorage.getItem('token');
+      const url = process.env.NEXT_PUBLIC_API_URL;
       
       if (!accessToken) {
         throw new Error('Access token not found. Please try again.');
       }
 
-      const response = await fetch('http://localhost:5000/api/send-otp', {
+      const response = await fetch(`${url}/api/send-otp`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',

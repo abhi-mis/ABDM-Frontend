@@ -36,14 +36,16 @@ export default function Home() {
     accessToken: '',
     aadharNumber: '',
     otp: '',
+    mobile: '',  // <-- Add this line
     profile: {
       name: '',
       dob: '',
       gender: '',
-      mobile: '',
+      mobile: '',  // This can stay if profile also needs mobile
       email: '',
     },
   });
+  
 
   const handleNext = () => {
     setCurrentStep((prev) => Math.min(prev + 1, steps.length));
