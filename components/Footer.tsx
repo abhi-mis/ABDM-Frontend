@@ -8,17 +8,17 @@ import ayushmanLogo from './images/ABh.png';
 export default function Footer() {
   const govLogos = [
       {
-        src: "https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg",
+        src: "https://p.kindpng.com/picc/s/462-4621574_gog-png-png-download-satyamev-jayate-logo-png.png",
         alt: "Government of India",
         width: 80
       },
       {
-        src: "./images/NHA.png",
+        src: "https://ourgovdotin.wordpress.com/wp-content/uploads/2020/08/nha.png?w=560",
         alt: "National Health Authority",
         width: 120
       },
       {
-        src: "./images/ABh.png",
+        src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXhbmRJi4LJqZR96s8okWOXdedomnH8GPY5w&s",
         alt: "Ayushman Bharat",
         width: 110
       }

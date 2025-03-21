@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Menu, X, Activity, User, FileText, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import VerifyAbha from './VerifyAbha';
+import logo from './images/logo.jpeg'; // Import the logo image
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -32,9 +33,9 @@ export default function Header() {
             <div className="flex items-center space-x-3">
               <div className="relative w-10 h-10 overflow-hidden rounded-xl transform transition-transform hover:scale-105">
                 <img 
-                  src="/images/logo.jpeg"
+                  src="https://media.licdn.com/dms/image/v2/D4D0BAQFzisxNGVY4Lw/company-logo_200_200/company-logo_200_200/0/1735566654386/docbotplus_logo?e=2147483647&v=beta&t=1o7lOa0gbZFhBBJQPjX7rP4B--K46zfF6EWIW8fk9gk" // Use the imported logo
                   alt="ABHA Logo"
-                  className="w-full h-full object-cover"
+                  className=""
                 />
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/30 to-purple-600/30 mix-blend-overlay" />
               </div>

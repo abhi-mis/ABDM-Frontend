@@ -9,7 +9,7 @@
 /coverage
 
 # next.js (Keep .next only if using next export, remove otherwise)
-
+/out/
 
 # production
 /build
