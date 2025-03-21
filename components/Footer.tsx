@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import nhaLogo from './images/NHA.png';
+import ayushmanLogo from './images/ABh.png';
 
 export default function Footer() {
   const govLogos = [
@@ -11,12 +13,12 @@ export default function Footer() {
       width: 80
     },
     {
-      src: "https://upload.wikimedia.org/wikipedia/commons/7/7e/National_Health_Authority_Logo.png",
+      src: "./images/NHA.png",
       alt: "National Health Authority",
       width: 120
     },
     {
-      src: "https://upload.wikimedia.org/wikipedia/commons/f/ff/Ayushman_Bharat_Logo.png",
+      src: "./images/ABh.png",
       alt: "Ayushman Bharat",
       width: 110
     }
