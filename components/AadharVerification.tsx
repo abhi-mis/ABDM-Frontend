@@ -59,8 +59,7 @@ export default function AadharVerification({
 
       // Save tokens to sessionStorage
       if (data.tokens) {
-        sessionStorage.setItem('token', data.tokens.token);
-        sessionStorage.setItem('refreshToken', data.tokens.refreshToken);
+        sessionStorage.setItem('X_Token', data.tokens.token);
       }
 
       // Save ABHA profile data if needed

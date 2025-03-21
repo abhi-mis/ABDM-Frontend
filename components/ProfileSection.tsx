@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { User, Loader2, Sparkles } from 'lucide-react';
+import { User, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { url } from 'node:inspector';
 
 interface ProfileSectionProps {
   onBack: () => void;
@@ -14,12 +13,33 @@ interface ProfileData {
   gender?: string;
   mobile?: string;
   email?: string;
+  photo?: string;
   [key: string]: any;
 }
 
 export default function ProfileSection({ onBack }: ProfileSectionProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  // Function to convert hex to base64
+  const hexToBase64 = (hexString: string) => {
+    try {
+      // Remove '0x' prefix if present
+      hexString = hexString.replace('0x', '');
+      
+      // Convert hex to binary string
+      const binaryString = hexString.match(/.{1,2}/g)?.map(byte => 
+        String.fromCharCode(parseInt(byte, 16))
+      ).join('') || '';
+      
+      // Convert binary string to base64
+      return btoa(binaryString);
+    } catch (error) {
+      console.error('Error converting hex to base64:', error);
+      return null;
+    }
+  };
 
   useEffect(() => {
     fetchProfileData();
@@ -29,10 +49,10 @@ export default function ProfileSection({ onBack }: ProfileSectionProps) {
     setIsLoading(true);
     try {
       const accessToken = sessionStorage.getItem('token');
-      const xToken = sessionStorage.getItem('refreshToken');
+      const X_Token = sessionStorage.getItem('X_Token');
       const url = process.env.NEXT_PUBLIC_API_URL;
 
-      if (!accessToken || !xToken) {
+      if (!accessToken || !X_Token) {
         throw new Error('Authentication tokens not found');
       }
 
@@ -44,7 +64,7 @@ export default function ProfileSection({ onBack }: ProfileSectionProps) {
         },
         body: JSON.stringify({
           accessToken,
-          X_Token: xToken
+          X_Token: X_Token
         })
       });
 
@@ -53,6 +73,15 @@ export default function ProfileSection({ onBack }: ProfileSectionProps) {
       }
 
       const data = await response.json();
+      
+      // If the response contains hex image data
+      if (data.photo) {
+        const base64Image = hexToBase64(data.photo);
+        if (base64Image) {
+          setProfileImage(`data:image/png;base64,${base64Image}`);
+        }
+      }
+      
       setProfileData(data);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch profile';
@@ -85,15 +114,20 @@ export default function ProfileSection({ onBack }: ProfileSectionProps) {
         transition={{ duration: 0.6 }}
         className="text-center mb-12"
       >
-        {/* <div className="inline-flex items-center px-6 py-2 rounded-full bg-white/10 backdrop-blur-lg border border-white/20 mb-6">
-          <Sparkles className="w-5 h-5 mr-2 text-yellow-400" />
-          <span className="text-white/90">Your Health Profile</span>
-        </div> */}
-        
         <div className="relative inline-block">
-          <div className="bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 transform transition-transform hover:scale-110 hover:rotate-3">
-            <User className="text-white w-12 h-12" />
-          </div>
+          {profileImage ? (
+            <div className="w-24 h-24 rounded-3xl overflow-hidden mx-auto mb-6 transform transition-transform hover:scale-110 hover:rotate-3">
+              <img 
+                src={profileImage} 
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 transform transition-transform hover:scale-110 hover:rotate-3">
+              <User className="text-white w-12 h-12" />
+            </div>
+          )}
         </div>
 
         <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 text-transparent bg-clip-text">

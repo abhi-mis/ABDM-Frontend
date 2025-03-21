@@ -1,5 +1,4 @@
-'use client';
-
+"use client";
 import { useState } from 'react';
 import ProgressBar from '@/components/ProgressBar';
 import WelcomePage from '@/components/WelcomePage';
@@ -7,6 +6,36 @@ import AadharRegistration from '@/components/AadharRegistration';
 import AadharVerification from '@/components/AadharVerification';
 import ProfileSection from '@/components/ProfileSection';
 import { motion } from 'framer-motion';
+
+// Define interfaces for our form data and component props
+interface FormData {
+  accessToken: string;
+  aadharNumber: string;
+  otp: string;
+  mobile: string;
+  profile: {
+    name: string;
+    dob: string;
+    gender: string;
+    mobile: string;
+    email: string;
+  };
+}
+
+interface BaseProps {
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+}
+
+interface StepProps extends BaseProps {
+  onNext: () => void;
+  onBack?: () => void;
+}
+
+// Updated ProfileSectionProps to extend StepProps
+interface ProfileSectionProps extends StepProps {
+  onBack: () => void;
+}
 
 const steps = [
   {
@@ -33,7 +62,7 @@ const steps = [
 
 export default function Home() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     accessToken: '',
     aadharNumber: '',
     otp: '',
@@ -88,6 +117,7 @@ export default function Home() {
           <ProfileSection
             formData={formData}
             setFormData={setFormData}
+            onNext={handleNext}
             onBack={handleBack}
           />
         );
