@@ -32,10 +32,7 @@ interface StepProps extends BaseProps {
   onBack?: () => void;
 }
 
-// Updated ProfileSectionProps to extend StepProps
-interface ProfileSectionProps extends StepProps {
-  onBack: () => void;
-}
+// Remove the redundant ProfileSectionProps interface since we'll use the component's own interface
 
 const steps = [
   {
@@ -115,9 +112,6 @@ export default function Home() {
       case 4:
         return (
           <ProfileSection
-            formData={formData}
-            setFormData={setFormData}
-            onNext={handleNext}
             onBack={handleBack}
           />
         );

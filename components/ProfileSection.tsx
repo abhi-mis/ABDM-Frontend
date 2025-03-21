@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { User, Loader2 } from 'lucide-react';
+import { User, Loader2, Download } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
@@ -22,22 +22,54 @@ export default function ProfileSection({ onBack }: ProfileSectionProps) {
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
-  // Function to convert hex to base64
-  const hexToBase64 = (hexString: string) => {
-    try {
-      // Remove '0x' prefix if present
-      hexString = hexString.replace('0x', '');
-      
-      // Convert hex to binary string
-      const binaryString = hexString.match(/.{1,2}/g)?.map(byte => 
-        String.fromCharCode(parseInt(byte, 16))
-      ).join('') || '';
-      
-      // Convert binary string to base64
-      return btoa(binaryString);
-    } catch (error) {
-      console.error('Error converting hex to base64:', error);
-      return null;
+  // Function to convert hex to binary array
+  const hexToBinary = (hexString: string): Uint8Array => {
+    // Remove any whitespace and line breaks
+    const cleanHex = hexString.replace(/[\s\n]/g, '');
+    const numbers = new Uint8Array(cleanHex.length / 2);
+    
+    for (let i = 0; i < cleanHex.length; i += 2) {
+      numbers[i / 2] = parseInt(cleanHex.substr(i, 2), 16);
+    }
+    
+    return numbers;
+  };
+
+  // Function to handle image download
+  const handleDownload = () => {
+    if (profileData?.photo) {
+      try {
+        // Convert hex to binary
+        const binaryData = hexToBinary(profileData.photo);
+        
+        // Create blob from binary data
+        const blob = new Blob([binaryData], { type: 'image/png' });
+        
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'profile-photo.png';
+        
+        // Trigger download
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up
+        window.URL.revokeObjectURL(url);
+        
+        toast.success('Photo downloaded successfully!', {
+          duration: 3000,
+          position: 'top-center'
+        });
+      } catch (error) {
+        console.error('Error downloading image:', error);
+        toast.error('Failed to download photo', {
+          duration: 3000,
+          position: 'top-center'
+        });
+      }
     }
   };
 
@@ -76,9 +108,17 @@ export default function ProfileSection({ onBack }: ProfileSectionProps) {
       
       // If the response contains hex image data
       if (data.photo) {
-        const base64Image = hexToBase64(data.photo);
-        if (base64Image) {
-          setProfileImage(`data:image/png;base64,${base64Image}`);
+        try {
+          const binaryData = hexToBinary(data.photo);
+          const blob = new Blob([binaryData], { type: 'image/png' });
+          const imageUrl = URL.createObjectURL(blob);
+          setProfileImage(imageUrl);
+        } catch (error) {
+          console.error('Error processing image data:', error);
+          toast.error('Failed to load profile image', {
+            duration: 3000,
+            position: 'top-center'
+          });
         }
       }
       
@@ -116,12 +156,21 @@ export default function ProfileSection({ onBack }: ProfileSectionProps) {
       >
         <div className="relative inline-block">
           {profileImage ? (
-            <div className="w-24 h-24 rounded-3xl overflow-hidden mx-auto mb-6 transform transition-transform hover:scale-110 hover:rotate-3">
-              <img 
-                src={profileImage} 
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
+            <div className="relative group">
+              <div className="w-24 h-24 rounded-3xl overflow-hidden mx-auto mb-6 transform transition-transform group-hover:scale-110 group-hover:rotate-3">
+                <img 
+                  src={profileImage} 
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <button
+                onClick={handleDownload}
+                className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-white/10 backdrop-blur-lg p-2 rounded-full hover:bg-white/20 transition-colors duration-200 group-hover:opacity-100 opacity-0"
+                title="Download photo"
+              >
+                <Download className="w-4 h-4 text-white" />
+              </button>
             </div>
           ) : (
             <div className="bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 transform transition-transform hover:scale-110 hover:rotate-3">
