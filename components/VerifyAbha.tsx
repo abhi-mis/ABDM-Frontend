@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Loader2, X } from 'lucide-react';
+import { Loader2, X, CheckCircle } from 'lucide-react';
 
 interface VerificationState {
-  step: 'initial' | 'otp';
+  step: 'initial' | 'otp' | 'verified';
   verificationMethod: 'abha-number' | 'mobile' | null;
   key: string;
   otp: string;
   loading: boolean;
   error: string | null;
+  verificationData: any | null; // State to hold verification response
 }
 
 interface VerifyAbhaProps {
@@ -25,7 +26,35 @@ export default function VerifyAbha({ isOpen, onClose }: VerifyAbhaProps) {
     otp: '',
     loading: false,
     error: null,
+    verificationData: null, // Initialize verification data
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchAccessToken();
+    }
+  }, [isOpen]);
+
+  const fetchAccessToken = async () => {
+    try {
+      const url = process.env.NEXT_PUBLIC_API_URL;
+      setState(prev => ({ ...prev, loading: true, error: null }));
+      const response = await axios.get(`${url}/api/access-token`);
+      
+      if (response.data.access_token) {
+        sessionStorage.setItem('token', response.data.access_token);
+        setState(prev => ({ ...prev, loading: false }));
+      } else {
+        throw new Error('Access token not received');
+      }
+    } catch (error) {
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch access token'
+      }));
+    }
+  };
 
   const handleSendOTP = async (method: 'abha-number' | 'mobile') => {
     try {
@@ -34,12 +63,12 @@ export default function VerifyAbha({ isOpen, onClose }: VerifyAbhaProps) {
       const accessToken = sessionStorage.getItem('token');
       const url = process.env.NEXT_PUBLIC_API_URL;
       if (!accessToken) {
-        throw new Error('Access token not found');
+        await fetchAccessToken();
       }
 
-      const response = await axios.post( `${url}/verify/send-otp`, {
+      const response = await axios.post(`${url}/verify/send-otp`, {
         loginHint: method,
-        accessToken,
+        accessToken: sessionStorage.getItem('token'),
         key: state.key
       });
 
@@ -69,20 +98,25 @@ export default function VerifyAbha({ isOpen, onClose }: VerifyAbhaProps) {
       const txnId = sessionStorage.getItem('txnId');
       const url = process.env.NEXT_PUBLIC_API_URL;
 
-      if (!accessToken || !txnId) {
-        throw new Error('Required credentials not found');
+      if (!accessToken) {
+        await fetchAccessToken();
       }
 
-      const response = await axios.post(`${url}/verify/verify-otp`, {
-        txnId,
-        otp: state.otp,
-        accessToken
-      });
+      if (!txnId) {
+        throw new Error('Transaction ID not found');
+      }
 
-      if (response.data.success) {
-        // Handle successful verification
-        setState(prev => ({ ...prev, loading: false }));
-        onClose();
+      // Call the actual API to verify OTP
+      const response = await axios.post(`${url}/verify/verify-otp`, { txnId, otp: state.otp, accessToken });
+
+      if (response.data.authResult === "success") {
+        const accountData = response.data.accounts[0]; // Assuming we only care about the first account
+        setState(prev => ({
+          ...prev,
+          loading: false,
+          step: 'verified',
+          verificationData: accountData // Store the verification data
+        }));
       }
     } catch (error) {
       setState(prev => ({
@@ -92,6 +126,8 @@ export default function VerifyAbha({ isOpen, onClose }: VerifyAbhaProps) {
       }));
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <motion.div
@@ -185,7 +221,7 @@ export default function VerifyAbha({ isOpen, onClose }: VerifyAbhaProps) {
                 </motion.div>
               )}
             </div>
-          ) : (
+          ) : state.step === 'otp' ? (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -212,6 +248,29 @@ export default function VerifyAbha({ isOpen, onClose }: VerifyAbhaProps) {
                   'Verify OTP'
                 )}
               </motion.button>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-4"
+            >
+              <div className="flex flex-col items-center justify-center p-4 bg-green-500/10 rounded-lg">
+  <CheckCircle className="w-16 h-16 text-green-500" />
+  <h3 className="text-lg font-bold text-white">Your ABHA Card is Verified!</h3>
+  {state.verificationData && (
+    <div className="mt-4 text-center">
+      <img 
+        src={`data:image/jpeg;base64,${state.verificationData.profilePhoto}`} 
+        alt="Profile" 
+        className="w-48 h-auto rounded-lg block mx-auto" // Added block and mx-auto for centering
+      />
+      <p className="text-white mt-2">Name: {state.verificationData.name}</p>
+      <p className="text-white">ABHA Number: {state.verificationData.ABHANumber}</p>
+      <p className="text-white">Preferred Address: {state.verificationData.preferredAbhaAddress}</p>
+    </div>
+  )}
+</div>
             </motion.div>
           )}
         </div>
