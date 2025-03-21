@@ -7,21 +7,22 @@ import ayushmanLogo from './images/ABh.png';
 
 export default function Footer() {
   const govLogos = [
-    {
-      src: "https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg",
-      alt: "Government of India",
-      width: 80
-    },
-    {
-      src: "./images/NHA.png",
-      alt: "National Health Authority",
-      width: 120
-    },
-    {
-      src: "./images/ABh.png",
-      alt: "Ayushman Bharat",
-      width: 110
-    }
+      {
+        src: "https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg",
+        alt: "Government of India",
+        width: 80
+      },
+      {
+        src: "./images/NHA.png",
+        alt: "National Health Authority",
+        width: 120
+      },
+      {
+        src: "./images/ABh.png",
+        alt: "Ayushman Bharat",
+        width: 110
+      }
+   
   ];
 
   return (
