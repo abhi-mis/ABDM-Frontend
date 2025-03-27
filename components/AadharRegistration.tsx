@@ -19,9 +19,36 @@ export default function AadharRegistration({
 }: AadharRegistrationProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [hoverInput, setHoverInput] = useState(false);
+  const [consent, setConsent] = useState(false);
+  const [aadharParts, setAadharParts] = useState(['', '', '']);
+
+  const handleAadharChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return;
+
+    const newParts = [...aadharParts];
+    newParts[index] = value;
+    setAadharParts(newParts);
+
+    // Auto-focus next input
+    if (value.length === 4 && index < 2) {
+      const nextInput = document.getElementById(`aadhar-${index + 1}`);
+      nextInput?.focus();
+    }
+
+    // Update form data with complete Aadhar number
+    setFormData({
+      ...formData,
+      aadharNumber: newParts.join('')
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!consent) {
+      toast.error('Please accept the consent statement to proceed');
+      return;
+    }
     
     try {
       setIsLoading(true);
@@ -105,29 +132,59 @@ export default function AadharRegistration({
           <div className={`absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl transition-opacity duration-300 blur-xl ${hoverInput ? 'opacity-100' : 'opacity-0'}`}></div>
           <div className="relative bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
             <label
-              htmlFor="aadhar"
+              htmlFor="aadhar-0"
               className="block text-white/90 text-lg font-medium mb-4"
             >
               Aadhar Number
             </label>
-            <input
-              type="text"
-              id="aadhar"
-              name="aadhar"
-              value={formData.aadharNumber || ''}
-              onChange={(e) =>
-                setFormData({ ...formData, aadharNumber: e.target.value })
-              }
-              placeholder="Enter 12-digit Aadhar number"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/50 focus:border-purple-500 focus:ring-purple-500 transition-all duration-300"
-              pattern="\d{12}"
-              maxLength={12}
-              required
-              disabled={isLoading}
-            />
+            <div className="flex gap-4 items-center">
+              {aadharParts.map((part, index) => (
+                <input
+                  key={index}
+                  type="text"
+                  id={`aadhar-${index}`}
+                  value={part}
+                  onChange={(e) => handleAadharChange(index, e.target.value)}
+                  maxLength={4}
+                  placeholder="0000"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/50 focus:border-purple-500 focus:ring-purple-500 transition-all duration-300 text-center text-lg"
+                  disabled={isLoading}
+                />
+              ))}
+            </div>
             <p className="mt-3 text-white/60">
-              Your Aadhar number is required for verification
+              You will receive an OTP on the mobile number linked with this Aadhar
             </p>
+          </div>
+        </div>
+
+        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
+          <div className="prose prose-invert max-w-none">
+            <h3 className="text-lg font-semibold mb-4">Consent Statement</h3>
+            <div className="space-y-4 text-white/80">
+              <p>
+                I, hereby declare that I am voluntarily sharing my Aadhaar Number / Virtual ID issued by the Unique Identification Authority of India ("UIDAI"), and my demographic information for the purpose of creating an Ayushman Bharat Health Account number ("ABHA number") and Ayushman Bharat Health Account address ("ABHA Address").
+              </p>
+              <p>
+                I authorize NHA to use my Aadhaar number / Virtual ID for performing Aadhaar based authentication with UIDAI as per the provisions of the Aadhaar (Targeted Delivery of Financial and other Subsidies, Benefits and Services) Act, 2016 for the aforesaid purpose. I understand that UIDAI will share my e-KYC details, or response of "Yes" with NHA upon successful authentication.
+              </p>
+              <p>
+                I intend to create Ayushman Bharat Health Account Number and Ayushman Bharat Health Account address using document other than Aadhaar.
+              </p>
+            </div>
+            <div className="mt-6">
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={consent}
+                  onChange={(e) => setConsent(e.target.checked)}
+                  className="mt-1 h-5 w-5 rounded border-white/20 bg-white/5 text-purple-500 focus:ring-purple-500 focus:ring-offset-0"
+                />
+                <span className="text-white/90 group-hover:text-white transition-colors">
+                  I agree and would like to proceed to verification
+                </span>
+              </label>
+            </div>
           </div>
         </div>
 
@@ -148,7 +205,7 @@ export default function AadharRegistration({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || !consent}
             className="relative group px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white disabled:opacity-50 transition-all duration-300"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-xl opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500"></div>
