@@ -3,6 +3,7 @@ import { CreditCard, Loader2, ArrowLeft, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { apiClient } from '../lib/axios';
+import { AxiosError } from 'axios';
 
 interface AadharRegistrationProps {
   formData: any;
@@ -52,38 +53,37 @@ export default function AadharRegistration({
     
     try {
       setIsLoading(true);
-
-      // Get the access token from wherever it's stored (e.g., localStorage, context, etc.)
+  
       const accessToken = localStorage.getItem('accessToken');
-
+  
       const response = await apiClient.post('/api/send-otp', {
         aadhar: formData.aadharNumber,
-        accessToken // Include the access token in the request body
+        accessToken
       });
-
+  
       const data = response.data;
       
-      // Save txnId to session storage
       if (data.txnId) {
         sessionStorage.setItem('txnId', data.txnId);
       }
-
-      // Show success toast with the message from the response
+  
       toast.success(data.message || 'OTP sent successfully!', {
         duration: 4000,
         position: 'top-center',
         icon: '📱'
       });
-
-      // Save all response data to formData
+  
       setFormData({
         ...formData,
         ...data
       });
-
+  
       onNext();
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to send OTP. Please try again.';
+      // Check if error is an AxiosError
+      const axiosError = error as AxiosError; // Type assertion
+  
+      const errorMessage = axiosError.response?.data?.message || axiosError.message || 'Failed to send OTP. Please try again.';
       toast.error(errorMessage, {
         duration: 4000,
         position: 'top-center'
@@ -93,7 +93,6 @@ export default function AadharRegistration({
       setIsLoading(false);
     }
   };
-
   return (
     <div className="max-w-4xl mx-auto px-4">
       <motion.div
