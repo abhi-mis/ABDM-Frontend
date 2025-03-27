@@ -53,8 +53,12 @@ export default function AadharRegistration({
     try {
       setIsLoading(true);
 
+      // Get the access token from wherever it's stored (e.g., localStorage, context, etc.)
+      const accessToken = localStorage.getItem('accessToken');
+
       const response = await apiClient.post('/api/send-otp', {
-        aadhar: formData.aadharNumber
+        aadhar: formData.aadharNumber,
+        accessToken // Include the access token in the request body
       });
 
       const data = response.data;
@@ -98,11 +102,6 @@ export default function AadharRegistration({
         transition={{ duration: 0.6 }}
         className="text-center mb-12"
       >
-        {/* <div className="inline-flex items-center px-6 py-2 rounded-full bg-white/10 backdrop-blur-lg border border-white/20 mb-6">
-          <Sparkles className="w-5 h-5 mr-2 text-yellow-400" />
-          <span className="text-white/90">Secure Identity Verification</span>
-        </div> */}
-        
         <div className="relative inline-block">
           <div className="bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 transform transition-transform hover:scale-110 hover:rotate-3">
             <CreditCard className="text-white w-12 h-12" />
