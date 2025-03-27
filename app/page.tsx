@@ -1,13 +1,14 @@
-"use client";
+'use client';
+
 import { useState } from 'react';
 import ProgressBar from '@/components/ProgressBar';
+import IntroductionPage from '@/components/IntroductionPage';
 import WelcomePage from '@/components/WelcomePage';
 import AadharRegistration from '@/components/AadharRegistration';
 import AadharVerification from '@/components/AadharVerification';
 import ProfileSection from '@/components/ProfileSection';
 import { motion } from 'framer-motion';
 
-// Define interfaces for our form data and component props
 interface FormData {
   accessToken: string;
   aadharNumber: string;
@@ -32,26 +33,29 @@ interface StepProps extends BaseProps {
   onBack?: () => void;
 }
 
-// Remove the redundant ProfileSectionProps interface since we'll use the component's own interface
-
 const steps = [
   {
     id: 1,
+    name: 'Introduction',
+    description: 'Learn about ABHA',
+  },
+  {
+    id: 2,
     name: 'Welcome',
     description: 'Get Started',
   },
   {
-    id: 2,
+    id: 3,
     name: 'Aadhar Registration',
     description: 'Enter your Aadhar details',
   },
   {
-    id: 3,
+    id: 4,
     name: 'Verification',
     description: 'Verify your Aadhar',
   },
   {
-    id: 4,
+    id: 5,
     name: 'Profile',
     description: 'Complete your profile',
   },
@@ -84,6 +88,8 @@ export default function Home() {
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
+        return <IntroductionPage onNext={handleNext} />;
+      case 2:
         return (
           <WelcomePage
             formData={formData}
@@ -91,7 +97,7 @@ export default function Home() {
             onNext={handleNext}
           />
         );
-      case 2:
+      case 3:
         return (
           <AadharRegistration
             formData={formData}
@@ -100,7 +106,7 @@ export default function Home() {
             onBack={handleBack}
           />
         );
-      case 3:
+      case 4:
         return (
           <AadharVerification
             formData={formData}
@@ -109,7 +115,7 @@ export default function Home() {
             onBack={handleBack}
           />
         );
-      case 4:
+      case 5:
         return (
           <ProfileSection
             onBack={handleBack}
