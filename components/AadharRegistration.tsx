@@ -57,7 +57,7 @@ export default function AadharRegistration({
     try {
       setIsLoading(true);
   
-      const accessToken = sessionStorage.getItem('accessToken');
+      const accessToken = sessionStorage.getItem('token');
   
       const response = await apiClient.post('/api/send-otp', {
         aadhar: formData.aadharNumber,
