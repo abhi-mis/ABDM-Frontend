@@ -2,7 +2,13 @@ import { Shield, Loader2, CheckCircle2, AlertCircle, Sparkles, ArrowLeft } from 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { apiClient } from '../lib/axios'; // Make sure to adjust the import path as needed
+import { apiClient } from '../lib/axios'; // Adjust the import path as needed
+import { AxiosError } from 'axios'; // Import AxiosError
+
+interface ErrorResponse {
+  message?: string; // Optional, as it may not always be present
+  // Add other properties if needed
+}
 
 interface AadharVerificationProps {
   formData: {
@@ -66,7 +72,9 @@ export default function AadharVerification({
         onNext();
       }, 1500);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || 'Something went wrong';
+      const axiosError = err as AxiosError<ErrorResponse>; // Type assertion with the custom error response type
+
+      const errorMessage = axiosError.response?.data?.message || axiosError.message || 'Something went wrong';
       setError(errorMessage);
       toast.error(errorMessage, {
         duration: 4000,
