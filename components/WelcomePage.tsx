@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ArrowRight, Shield, Smartphone, UserCheck, Loader2, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { apiClient } from '../lib/axios';
 
 interface WelcomePageProps {
   formData: any;
@@ -21,19 +22,7 @@ export default function WelcomePage({
   const handleGetStarted = async () => {
     try {
       setIsLoading(true);
-      const url = process.env.NEXT_PUBLIC_API_URL;
-      const response = await fetch(`${url}/api/access-token`, {
-        method: 'GET',
-        headers: {
-          "Content-Type": "application/json",
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      
-      const data = await response.json();
+      const { data } = await apiClient.get('/api/access-token');
       sessionStorage.setItem('token', data.access_token);
       setFormData({ ...formData, accessToken: data.access_token });
       onNext();

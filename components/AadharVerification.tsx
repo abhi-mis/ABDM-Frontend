@@ -2,6 +2,7 @@ import { Shield, Loader2, CheckCircle2, AlertCircle, Sparkles, ArrowLeft } from 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { apiClient } from '../lib/axios'; // Make sure to adjust the import path as needed
 
 interface AadharVerificationProps {
   formData: {
@@ -32,30 +33,17 @@ export default function AadharVerification({
 
     try {
       const txnId = sessionStorage.getItem('txnId');
-      const accessToken = sessionStorage.getItem('token');
-      const url = process.env.NEXT_PUBLIC_API_URL;
-      if (!txnId || !accessToken) {
+      if (!txnId) {
         throw new Error('Missing required session data');
       }
 
-      const response = await fetch(`${url}/api/verify-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          txnId,
-          accessToken,
-          mobile: formData.mobile,
-          otp: formData.otp,
-        }),
+      const response = await apiClient.post('/api/verify-otp', {
+        txnId,
+        mobile: formData.mobile,
+        otp: formData.otp,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Verification failed');
-      }
+      const data = response.data;
 
       // Save tokens to sessionStorage
       if (data.tokens) {
@@ -78,8 +66,9 @@ export default function AadharVerification({
         onNext();
       }, 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
-      toast.error(error || 'Verification failed', {
+      const errorMessage = err.response?.data?.message || err.message || 'Something went wrong';
+      setError(errorMessage);
+      toast.error(errorMessage, {
         duration: 4000,
         position: 'top-center'
       });

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { User, Loader2, Download } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { apiClient } from '../lib/axios';
 
 interface ProfileSectionProps {
   onBack: () => void;
@@ -50,29 +51,15 @@ export default function ProfileSection({ onBack }: ProfileSectionProps) {
     try {
       const accessToken = sessionStorage.getItem('token');
       const X_Token = sessionStorage.getItem('X_Token');
-      const url = process.env.NEXT_PUBLIC_API_URL;
 
       if (!accessToken || !X_Token) {
         throw new Error('Authentication tokens not found');
       }
 
-      const response = await fetch(`${url}/api/profile`, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          accessToken,
-          X_Token: X_Token
-        })
+      const { data } = await apiClient.post('/api/profile', {
+        accessToken,
+        X_Token
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch profile');
-      }
-
-      const data = await response.json();
       
       if (data.image) {
         setProfileImage(`data:image/png;base64,${data.image}`);
