@@ -11,7 +11,10 @@ interface AadharRegistrationProps {
   onNext: () => void;
   onBack: () => void;
 }
-
+interface ErrorResponse {
+  message?: string; // Optional, as it may not always be present
+  // Add other properties if needed
+}
 export default function AadharRegistration({
   formData,
   setFormData,
@@ -80,8 +83,7 @@ export default function AadharRegistration({
   
       onNext();
     } catch (error) {
-      // Check if error is an AxiosError
-      const axiosError = error as AxiosError; // Type assertion
+      const axiosError = error as AxiosError<ErrorResponse>; // Type assertion with the custom error response type
   
       const errorMessage = axiosError.response?.data?.message || axiosError.message || 'Failed to send OTP. Please try again.';
       toast.error(errorMessage, {
