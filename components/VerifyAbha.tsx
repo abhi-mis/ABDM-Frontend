@@ -5,13 +5,15 @@ import { apiClient } from '../lib/axios';
 
 interface VerificationState {
   step: 'initial' | 'otp' | 'verified';
-  verificationMethod: 'abha-number' | 'mobile' | null;
+  verificationMethod: 'abha-number' | 'mobile' | 'aadhaar' | null;
   key: string;
   otp: string;
   loading: boolean;
   error: string | null;
   verificationData: any | null;
   abhaParts: string[];
+  aadhaarParts: string[];
+  mobileNumber: string;
 }
 
 interface VerifyAbhaProps {
@@ -29,10 +31,18 @@ export default function VerifyAbha({ isOpen, onClose }: VerifyAbhaProps) {
     error: null,
     verificationData: null,
     abhaParts: ['', '', '', ''],
+    aadhaarParts: ['', '', ''],
+    mobileNumber: '',
   });
 
-  const inputRefs = [
+  const abhaInputRefs = [
     useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+  ];
+
+  const aadhaarInputRefs = [
     useRef<HTMLInputElement>(null),
     useRef<HTMLInputElement>(null),
     useRef<HTMLInputElement>(null),
@@ -64,7 +74,7 @@ export default function VerifyAbha({ isOpen, onClose }: VerifyAbhaProps) {
     }
   };
 
-  const handleSendOTP = async (method: 'abha-number' | 'mobile') => {
+  const handleSendOTP = async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
       
@@ -73,18 +83,28 @@ export default function VerifyAbha({ isOpen, onClose }: VerifyAbhaProps) {
         await fetchAccessToken();
       }
 
-      const { data } = await apiClient.post('/verify/send-otp', {
-        loginHint: method,
-        accessToken: sessionStorage.getItem('token'),
-        key: state.abhaParts.join('-')
-      });
+      let response;
+      if (state.verificationMethod === 'aadhaar') {
+        response = await apiClient.post('/verify/request-otp-for-aadhar', {
+          aadhar: state.aadhaarParts.join(''),
+          accessToken: sessionStorage.getItem('token')
+        });
+      } else {
+        response = await apiClient.post('/verify/send-otp', {
+          loginHint: state.verificationMethod,
+          accessToken: sessionStorage.getItem('token'),
+          key: state.verificationMethod === 'abha-number' 
+            ? state.abhaParts.join('-')
+            : state.mobileNumber
+        });
+      }
 
+      const { data } = response;
       if (data.txnId) {
         sessionStorage.setItem('txnId', data.txnId);
         setState(prev => ({
           ...prev,
           step: 'otp',
-          verificationMethod: method,
           loading: false
         }));
       }
@@ -112,14 +132,18 @@ export default function VerifyAbha({ isOpen, onClose }: VerifyAbhaProps) {
         throw new Error('Transaction ID not found');
       }
 
-      const { data } = await apiClient.post('/verify/verify-otp', {
+      const endpoint = state.verificationMethod === 'aadhaar' 
+        ? '/verify/verify-aadhar-otp'
+        : '/verify/verify-otp';
+
+      const { data } = await apiClient.post(endpoint, {
         txnId,
         otp: state.otp,
         accessToken
       });
 
-      if (data.authResult === "success") {
-        const accountData = data.accounts[0];
+      if (data.authResult === "success" || (state.verificationMethod === 'aadhaar' && data.success)) {
+        const accountData = data.accounts?.[0] || data;
         setState(prev => ({
           ...prev,
           loading: false,
@@ -137,7 +161,7 @@ export default function VerifyAbha({ isOpen, onClose }: VerifyAbhaProps) {
   };
 
   const handleABHAChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return; // Allow only digits
+    if (!/^\d*$/.test(value)) return;
 
     const maxLength = index === 0 ? 2 : 4;
     if (value.length > maxLength) return;
@@ -151,32 +175,68 @@ export default function VerifyAbha({ isOpen, onClose }: VerifyAbhaProps) {
       key: newParts.join('-')
     }));
 
-    // Auto-focus next input when current input is filled
     if (value.length === maxLength && index < 3) {
-      inputRefs[index + 1].current?.focus();
+      abhaInputRefs[index + 1].current?.focus();
     }
   };
 
-  const handleKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
-    const currentValue = state.abhaParts[index];
+  const handleAadhaarChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return;
+
+    if (value.length > 4) return;
+
+    const newParts = [...state.aadhaarParts];
+    newParts[index] = value;
+
+    setState(prev => ({
+      ...prev,
+      aadhaarParts: newParts
+    }));
+
+    if (value.length === 4 && index < 2) {
+      aadhaarInputRefs[index + 1].current?.focus();
+    }
+  };
+
+  const handleMobileChange = (value: string) => {
+    if (!/^\d*$/.test(value) || value.length > 10) return;
+    setState(prev => ({ ...prev, mobileNumber: value }));
+  };
+
+  const handleKeyDown = (
+    index: number, 
+    e: KeyboardEvent<HTMLInputElement>, 
+    type: 'abha' | 'aadhaar'
+  ) => {
+    const refs = type === 'abha' ? abhaInputRefs : aadhaarInputRefs;
+    const parts = type === 'abha' ? state.abhaParts : state.aadhaarParts;
+    const maxIndex = type === 'abha' ? 3 : 2;
+    
+    const currentValue = parts[index];
     
     if (e.key === 'Backspace' && !currentValue && index > 0) {
-      // Move to previous input on backspace if current input is empty
-      inputRefs[index - 1].current?.focus();
+      refs[index - 1].current?.focus();
     } else if (e.key === 'ArrowLeft' && index > 0) {
-      // Move to previous input on left arrow
-      inputRefs[index - 1].current?.focus();
-    } else if (e.key === 'ArrowRight' && index < 3) {
-      // Move to next input on right arrow
-      inputRefs[index + 1].current?.focus();
+      refs[index - 1].current?.focus();
+    } else if (e.key === 'ArrowRight' && index < maxIndex) {
+      refs[index + 1].current?.focus();
     }
   };
 
-  const isABHAValid = () => {
-    return state.abhaParts[0].length === 2 &&
-           state.abhaParts[1].length === 4 &&
-           state.abhaParts[2].length === 4 &&
-           state.abhaParts[3].length === 4;
+  const isInputValid = () => {
+    switch (state.verificationMethod) {
+      case 'abha-number':
+        return state.abhaParts[0].length === 2 &&
+               state.abhaParts[1].length === 4 &&
+               state.abhaParts[2].length === 4 &&
+               state.abhaParts[3].length === 4;
+      case 'aadhaar':
+        return state.aadhaarParts.every(part => part.length === 4);
+      case 'mobile':
+        return state.mobileNumber.length === 10;
+      default:
+        return false;
+    }
   };
 
   if (!isOpen) return null;
@@ -221,10 +281,10 @@ export default function VerifyAbha({ isOpen, onClose }: VerifyAbhaProps) {
 
           {state.step === 'initial' ? (
             <div className="space-y-6">
-              <div className="flex gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <button
                   onClick={() => setState(prev => ({ ...prev, verificationMethod: 'abha-number' }))}
-                  className={`flex-1 p-4 rounded-lg border-2 transition-colors ${
+                  className={`p-4 rounded-lg border-2 transition-colors ${
                     state.verificationMethod === 'abha-number'
                       ? 'border-purple-500 bg-purple-500/10 text-purple-400'
                       : 'border-white/10 hover:border-white/20 text-white/70 hover:text-white'
@@ -233,8 +293,18 @@ export default function VerifyAbha({ isOpen, onClose }: VerifyAbhaProps) {
                   ABHA Number
                 </button>
                 <button
+                  onClick={() => setState(prev => ({ ...prev, verificationMethod: 'aadhaar' }))}
+                  className={`p-4 rounded-lg border-2 transition-colors ${
+                    state.verificationMethod === 'aadhaar'
+                      ? 'border-purple-500 bg-purple-500/10 text-purple-400'
+                      : 'border-white/10 hover:border-white/20 text-white/70 hover:text-white'
+                  }`}
+                >
+                  Aadhaar
+                </button>
+                <button
                   onClick={() => setState(prev => ({ ...prev, verificationMethod: 'mobile' }))}
-                  className={`flex-1 p-4 rounded-lg border-2 transition-colors ${
+                  className={`p-4 rounded-lg border-2 transition-colors ${
                     state.verificationMethod === 'mobile'
                       ? 'border-purple-500 bg-purple-500/10 text-purple-400'
                       : 'border-white/10 hover:border-white/20 text-white/70 hover:text-white'
@@ -252,37 +322,80 @@ export default function VerifyAbha({ isOpen, onClose }: VerifyAbhaProps) {
                 >
                   <div>
                     <label className="block text-sm font-medium text-white/70 mb-2">
-                      Enter your ABHA Number
+                      {state.verificationMethod === 'abha-number' && 'Enter your ABHA Number'}
+                      {state.verificationMethod === 'aadhaar' && 'Enter your Aadhaar Number'}
+                      {state.verificationMethod === 'mobile' && 'Enter your Mobile Number'}
                     </label>
-                    <div className="flex gap-3 items-center">
-                      {state.abhaParts.map((part, index) => (
-                        <div key={index} className="relative flex-1">
-                          <input
-                            ref={inputRefs[index]}
-                            type="text"
-                            value={part}
-                            onChange={(e) => handleABHAChange(index, e.target.value)}
-                            onKeyDown={(e) => handleKeyDown(index, e)}
-                            maxLength={index === 0 ? 2 : 4}
-                            placeholder={index === 0 ? "91" : "0000"}
-                            className="w-full px-4 py-3 bg-white/5 border-2 border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 text-center text-lg tracking-wider"
-                          />
-                          {index < 3 && (
-                            <span className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 text-white/30 text-lg">
-                              -
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                    
+                    {state.verificationMethod === 'abha-number' && (
+                      <div className="flex gap-3 items-center">
+                        {state.abhaParts.map((part, index) => (
+                          <div key={index} className="relative flex-1">
+                            <input
+                              ref={abhaInputRefs[index]}
+                              type="text"
+                              value={part}
+                              onChange={(e) => handleABHAChange(index, e.target.value)}
+                              onKeyDown={(e) => handleKeyDown(index, e, 'abha')}
+                              maxLength={index === 0 ? 2 : 4}
+                              placeholder={index === 0 ? "91" : "0000"}
+                              className="w-full px-4 py-3 bg-white/5 border-2 border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 text-center text-lg tracking-wider"
+                            />
+                            {index < 3 && (
+                              <span className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 text-white/30 text-lg">
+                                -
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {state.verificationMethod === 'aadhaar' && (
+                      <div className="flex gap-3 items-center">
+                        {state.aadhaarParts.map((part, index) => (
+                          <div key={index} className="relative flex-1">
+                            <input
+                              ref={aadhaarInputRefs[index]}
+                              type="text"
+                              value={part}
+                              onChange={(e) => handleAadhaarChange(index, e.target.value)}
+                              onKeyDown={(e) => handleKeyDown(index, e, 'aadhaar')}
+                              maxLength={4}
+                              placeholder="0000"
+                              className="w-full px-4 py-3 bg-white/5 border-2 border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 text-center text-lg tracking-wider"
+                            />
+                            {index < 2 && (
+                              <span className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 text-white/30 text-lg">
+                                -
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {state.verificationMethod === 'mobile' && (
+                      <input
+                        type="text"
+                        value={state.mobileNumber}
+                        onChange={(e) => handleMobileChange(e.target.value)}
+                        placeholder="Enter 10-digit mobile number"
+                        className="w-full px-4 py-3 bg-white/5 border-2 border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 text-lg"
+                        maxLength={10}
+                      />
+                    )}
+
                     <p className="mt-2 text-sm text-white/50">
-                      Format: XX-XXXX-XXXX-XXXX
+                      {state.verificationMethod === 'abha-number' && 'Format: XX-XXXX-XXXX-XXXX'}
+                      {state.verificationMethod === 'aadhaar' && 'Format: XXXX-XXXX-XXXX'}
+                      {state.verificationMethod === 'mobile' && 'Enter your 10-digit mobile number'}
                     </p>
                   </div>
                   
                   <motion.button
-                    onClick={() => handleSendOTP(state.verificationMethod!)}
-                    disabled={state.loading || !isABHAValid()}
+                    onClick={handleSendOTP}
+                    disabled={state.loading || !isInputValid()}
                     className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium rounded-lg shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -341,21 +454,27 @@ export default function VerifyAbha({ isOpen, onClose }: VerifyAbhaProps) {
                 <h3 className="text-2xl font-bold text-white mb-6">Your ABHA Card is Verified!</h3>
                 {state.verificationData && (
                   <div className="w-full max-w-md text-center">
-                    <img 
-                      src={`data:image/jpeg;base64,${state.verificationData.profilePhoto}`} 
-                      alt="Profile" 
-                      className="w-48 h-auto rounded-lg mx-auto mb-4 shadow-lg"
-                    />
+                    {state.verificationData.profilePhoto && (
+                      <img 
+                        src={`data:image/jpeg;base64,${state.verificationData.profilePhoto}`} 
+                        alt="Profile" 
+                        className="w-48 h-auto rounded-lg mx-auto mb-4 shadow-lg"
+                      />
+                    )}
                     <div className="space-y-2 text-lg">
                       <p className="text-white">
                         <span className="text-white/50">Name:</span> {state.verificationData.name}
                       </p>
-                      <p className="text-white">
-                        <span className="text-white/50">ABHA Number:</span> {state.verificationData.ABHANumber}
-                      </p>
-                      <p className="text-white">
-                        <span className="text-white/50">Preferred Address:</span> {state.verificationData.preferredAbhaAddress}
-                      </p>
+                      {state.verificationData.ABHANumber && (
+                        <p className="text-white">
+                          <span className="text-white/50">ABHA Number:</span> {state.verificationData.ABHANumber}
+                        </p>
+                      )}
+                      {state.verificationData.preferredAbhaAddress && (
+                        <p className="text-white">
+                          <span className="text-white/50">Preferred Address:</span> {state.verificationData.preferredAbhaAddress}
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
