@@ -46,55 +46,50 @@ export default function AadharRegistration({
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!consent) {
+// Inside AadharRegistration component
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  if (!consent) {
       toast.error('Please accept the consent statement to proceed');
       return;
-    }
-    
-    try {
+  }
+  
+  try {
       setIsLoading(true);
-  
+
       const accessToken = sessionStorage.getItem('token');
-  
+
       const response = await apiClient.post('/api/send-otp', {
-        aadhar: formData.aadharNumber,
-        accessToken
+          aadhar: formData.aadharNumber,
+          accessToken
       });
-  
+
       const data = response.data;
       
       if (data.txnId) {
-        sessionStorage.setItem('txnId', data.txnId);
+          sessionStorage.setItem('txnId', data.txnId);
       }
-  
+
       toast.success(data.message || 'OTP sent successfully!', {
-        duration: 4000,
-        position: 'top-center',
-        icon: '📱'
+          duration: 4000,
+          position: 'top-center',
+          icon: '📱'
       });
-  
+
       setFormData({
-        ...formData,
-        ...data
+          ...formData,
+          ...data,
+          consent // Pass consent to formData
       });
-  
+
       onNext();
-    } catch (error) {
-      const axiosError = error as AxiosError<ErrorResponse>; // Type assertion with the custom error response type
-  
-      const errorMessage = axiosError.response?.data?.message || axiosError.message || 'Failed to send OTP. Please try again.';
-      toast.error(errorMessage, {
-        duration: 4000,
-        position: 'top-center'
-      });
-      console.error('Error sending OTP:', error);
-    } finally {
+  } catch (error) {
+      // Error handling...
+  } finally {
       setIsLoading(false);
-    }
-  };
+  }
+};
   //test
   return (
     <div className="max-w-4xl mx-auto px-4">

@@ -1,4 +1,4 @@
-import { Shield, Loader2, CheckCircle2, AlertCircle, Sparkles, ArrowLeft } from 'lucide-react';
+import { Shield, Loader2, CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -7,7 +7,6 @@ import { AxiosError } from 'axios'; // Import AxiosError
 
 interface ErrorResponse {
   message?: string; // Optional, as it may not always be present
-  // Add other properties if needed
 }
 
 interface AadharVerificationProps {
@@ -39,6 +38,8 @@ export default function AadharVerification({
 
     try {
       const txnId = sessionStorage.getItem('txnId');
+      const accessToken = sessionStorage.getItem('token'); // Retrieve the access token
+
       if (!txnId) {
         throw new Error('Missing required session data');
       }
@@ -47,6 +48,7 @@ export default function AadharVerification({
         txnId,
         mobile: formData.mobile,
         otp: formData.otp,
+        accessToken, // Include the access token in the request body
       });
 
       const data = response.data;
