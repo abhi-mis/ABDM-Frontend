@@ -2,11 +2,11 @@ import { Shield, Loader2, CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-re
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { apiClient } from '../lib/axios'; // Adjust the import path as needed
-import { AxiosError } from 'axios'; // Import AxiosError
+import { apiClient } from '../lib/axios';
+import { AxiosError } from 'axios';
 
 interface ErrorResponse {
-  message?: string; // Optional, as it may not always be present
+  message?: string;
 }
 
 interface AadharVerificationProps {
@@ -30,21 +30,30 @@ export default function AadharVerification({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [hoverInput, setHoverInput] = useState<string | null>(null);
-  const [otpSent, setOtpSent] = useState(false); // State to track if OTP has been sent
-  const [resendAttempts, setResendAttempts] = useState(0); // Track the number of resend attempts
-  const [isResendDisabled, setIsResendDisabled] = useState(false); // Disable resend button initially
+  const [otpSent, setOtpSent] = useState(false);
+  const [resendAttempts, setResendAttempts] = useState(0);
+  const [isResendDisabled, setIsResendDisabled] = useState(false);
+  const [timer, setTimer] = useState(60);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-
-    if (isResendDisabled) {
-      timer = setTimeout(() => {
-        setIsResendDisabled(false);
-      }, 60000); // 60 seconds
+    let interval: NodeJS.Timeout;
+    
+    if (isResendDisabled && timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prevTimer) => {
+          if (prevTimer <= 1) {
+            setIsResendDisabled(false);
+            return 60;
+          }
+          return prevTimer - 1;
+        });
+      }, 1000);
     }
 
-    return () => clearTimeout(timer); // Cleanup timer on unmount
-  }, [isResendDisabled]);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isResendDisabled, timer]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +62,7 @@ export default function AadharVerification({
 
     try {
       const txnId = sessionStorage.getItem('txnId');
-      const accessToken = sessionStorage.getItem('token'); // Retrieve the access token
+      const accessToken = sessionStorage.getItem('token');
 
       if (!txnId) {
         throw new Error('Missing required session data');
@@ -63,17 +72,15 @@ export default function AadharVerification({
         txnId,
         mobile: formData.mobile,
         otp: formData.otp,
-        accessToken, // Include the access token in the request body
+        accessToken,
       });
 
       const data = response.data;
 
-      // Save tokens to sessionStorage
       if (data.tokens) {
         sessionStorage.setItem('X_Token', data.tokens.token);
       }
 
-      // Save ABHA profile data if needed
       if (data.ABHAProfile) {
         sessionStorage.setItem('ABHAProfile', JSON.stringify(data.ABHAProfile));
       }
@@ -89,8 +96,7 @@ export default function AadharVerification({
         onNext();
       }, 1500);
     } catch (err) {
-      const axiosError = err as AxiosError<ErrorResponse>; // Type assertion with the custom error response type
-
+      const axiosError = err as AxiosError<ErrorResponse>;
       const errorMessage = axiosError.response?.data?.message || axiosError.message || 'Something went wrong';
       setError(errorMessage);
       toast.error(errorMessage, {
@@ -104,7 +110,12 @@ export default function AadharVerification({
 
   const handleResendOtp = async () => {
     if (resendAttempts >= 2) {
-      toast.error('You can only resend the OTP 2 times after the first attempt.');
+      toast.error('Maximum resend attempts reached (2 times).');
+      return;
+    }
+
+    if (isResendDisabled) {
+      toast.error(`Please wait ${timer} seconds before requesting a new OTP.`);
       return;
     }
 
@@ -123,9 +134,10 @@ export default function AadharVerification({
         sessionStorage.setItem('txnId', data.txnId);
       }
 
-      setOtpSent(true); // Mark OTP as sent
-      setResendAttempts(prev => prev + 1); // Increment the resend attempts
-      setIsResendDisabled(true); // Disable the resend button
+      setOtpSent(true);
+      setResendAttempts(prev => prev + 1);
+      setIsResendDisabled(true);
+      setTimer(60);
       toast.success(data.message || 'OTP resent successfully!', {
         duration: 4000,
         position: 'top-center',
@@ -301,19 +313,32 @@ export default function AadharVerification({
         </div>
       </motion.form>
 
-      {/* Always show Resend OTP Button */}
-      <div className="mt-4 text-center">
+      {/* Resend OTP Section with Timer */}
+      <div className="mt-4 text-center space-y-4">
+        {isResendDisabled && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-lg font-semibold text-white/90"
+          >
+            Resend available in: {timer}s
+          </motion.div>
+        )}
+        
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleResendOtp}
-          className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white transition-all duration-300"
-          disabled={isLoading || isResendDisabled}
+          className={`px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white transition-all duration-300 ${isResendDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={isLoading || isResendDisabled || resendAttempts >= 2}
         >
-          Resend OTP
+          {resendAttempts >= 2 ? 'Maximum attempts reached' : 'Resend OTP'}
         </motion.button>
-        <p className="mt-2 text-sm text-white/70">
-          OTP can be resent after 60 seconds of the first attempt. You can resend it a maximum of 2 times.
+        
+        <p className="text-sm text-white/70">
+          {resendAttempts >= 2 
+            ? 'You have used all available resend attempts.' 
+            : `${2 - resendAttempts} resend attempts remaining. Please wait for the timer to complete between attempts.`}
         </p>
       </div>
     </div>
