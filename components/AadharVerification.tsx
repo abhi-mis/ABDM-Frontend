@@ -1,5 +1,5 @@
 import { Shield, Loader2, CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { apiClient } from '../lib/axios'; // Adjust the import path as needed
@@ -30,6 +30,21 @@ export default function AadharVerification({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [hoverInput, setHoverInput] = useState<string | null>(null);
+  const [otpSent, setOtpSent] = useState(false); // State to track if OTP has been sent
+  const [resendAttempts, setResendAttempts] = useState(0); // Track the number of resend attempts
+  const [isResendDisabled, setIsResendDisabled] = useState(false); // Disable resend button initially
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+
+    if (isResendDisabled) {
+      timer = setTimeout(() => {
+        setIsResendDisabled(false);
+      }, 60000); // 60 seconds
+    }
+
+    return () => clearTimeout(timer); // Cleanup timer on unmount
+  }, [isResendDisabled]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,6 +92,48 @@ export default function AadharVerification({
       const axiosError = err as AxiosError<ErrorResponse>; // Type assertion with the custom error response type
 
       const errorMessage = axiosError.response?.data?.message || axiosError.message || 'Something went wrong';
+      setError(errorMessage);
+      toast.error(errorMessage, {
+        duration: 4000,
+        position: 'top-center'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendAttempts >= 2) {
+      toast.error('You can only resend the OTP 2 times after the first attempt.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const accessToken = sessionStorage.getItem('token');
+      const response = await apiClient.post('/api/send-otp', {
+        aadhar: formData.aadharNumber,
+        accessToken
+      });
+
+      const data = response.data;
+
+      if (data.txnId) {
+        sessionStorage.setItem('txnId', data.txnId);
+      }
+
+      setOtpSent(true); // Mark OTP as sent
+      setResendAttempts(prev => prev + 1); // Increment the resend attempts
+      setIsResendDisabled(true); // Disable the resend button
+      toast.success(data.message || 'OTP resent successfully!', {
+        duration: 4000,
+        position: 'top-center',
+        icon: '📱'
+      });
+    } catch (error) {
+      const axiosError = error as AxiosError<ErrorResponse>;
+      const errorMessage = axiosError.response?.data?.message || axiosError.message || 'Failed to resend OTP';
       setError(errorMessage);
       toast.error(errorMessage, {
         duration: 4000,
@@ -243,6 +300,22 @@ export default function AadharVerification({
           </motion.button>
         </div>
       </motion.form>
+
+      {/* Always show Resend OTP Button */}
+      <div className="mt-4 text-center">
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={handleResendOtp}
+          className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white transition-all duration-300"
+          disabled={isLoading || isResendDisabled}
+        >
+          Resend OTP
+        </motion.button>
+        <p className="mt-2 text-sm text-white/70">
+          OTP can be resent after 60 seconds of the first attempt. You can resend it a maximum of 2 times.
+        </p>
+      </div>
     </div>
   );
 }
