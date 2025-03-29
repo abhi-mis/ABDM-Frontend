@@ -1,3 +1,4 @@
+// app/pages/index.tsx
 'use client';
 
 import { useState } from 'react';
@@ -7,6 +8,7 @@ import WelcomePage from '@/components/WelcomePage';
 import AadharRegistration from '@/components/AadharRegistration';
 import AadharVerification from '@/components/AadharVerification';
 import ProfileSection from '@/components/ProfileSection';
+import Assistant from '@/components/Assistant'; // Import the Assistant component
 import { motion } from 'framer-motion';
 
 interface FormData {
@@ -23,42 +25,12 @@ interface FormData {
   };
 }
 
-interface BaseProps {
-  formData: FormData;
-  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
-}
-
-interface StepProps extends BaseProps {
-  onNext: () => void;
-  onBack?: () => void;
-}
-
 const steps = [
-  {
-    id: 1,
-    name: 'Introduction',
-    description: 'Learn about ABHA',
-  },
-  {
-    id: 2,
-    name: 'Welcome',
-    description: 'Get Started',
-  },
-  {
-    id: 3,
-    name: 'Aadhar Registration',
-    description: 'Enter your Aadhar details',
-  },
-  {
-    id: 4,
-    name: 'Verification',
-    description: 'Verify your Aadhar',
-  },
-  {
-    id: 5,
-    name: 'Profile',
-    description: 'Complete your profile',
-  },
+  { id: 1, name: 'Introduction', description: 'Learn about ABHA' },
+  { id: 2, name: 'Welcome', description: 'Get Started' },
+  { id: 3, name: 'Aadhar Registration', description: 'Enter your Aadhar details' },
+  { id: 4, name: 'Verification', description: 'Verify your Aadhar' },
+  { id: 5, name: 'Profile', description: 'Complete your profile' },
 ];
 
 export default function Home() {
@@ -77,6 +49,8 @@ export default function Home() {
     },
   });
 
+  const [showAssistant, setShowAssistant] = useState(false); // State to control Assistant visibility
+
   const handleNext = () => {
     setCurrentStep((prev) => Math.min(prev + 1, steps.length));
   };
@@ -90,37 +64,13 @@ export default function Home() {
       case 1:
         return <IntroductionPage onNext={handleNext} />;
       case 2:
-        return (
-          <WelcomePage
-            formData={formData}
-            setFormData={setFormData}
-            onNext={handleNext}
-          />
-        );
+        return <WelcomePage formData={formData} setFormData={setFormData} onNext={handleNext} />;
       case 3:
-        return (
-          <AadharRegistration
-            formData={formData}
-            setFormData={setFormData}
-            onNext={handleNext}
-            onBack={handleBack}
-          />
-        );
+        return <AadharRegistration formData={formData} setFormData={setFormData} onNext={handleNext} onBack={handleBack} />;
       case 4:
-        return (
-          <AadharVerification
-            formData={formData}
-            setFormData={setFormData}
-            onNext={handleNext}
-            onBack={handleBack}
-          />
-        );
+        return <AadharVerification formData={formData} setFormData={setFormData} onNext={handleNext} onBack={handleBack} />;
       case 5:
-        return (
-          <ProfileSection
-            onBack={handleBack}
-          />
-        );
+        return <ProfileSection onBack={handleBack} />;
       default:
         return null;
     }
@@ -174,6 +124,31 @@ export default function Home() {
             </div>
           </div>
         </motion.div>
+
+        {/* Button to open Assistant */}
+        <div className="text-center mt-8">
+          <button
+            onClick={() => setShowAssistant(true)}
+            className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-2 rounded-full hover:opacity-90 transition-opacity"
+          >
+            Open AI Health Assistant
+          </button>
+        </div>
+
+        {/* Conditionally render the Assistant component */}
+        {showAssistant && (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+            <div className="bg-white rounded-lg p-4 max-w-lg w-full">
+              <Assistant />
+              <button
+                onClick={() => setShowAssistant(false)}
+                className="mt-4 bg-red-500 text-white px-4 py-2 rounded-full"
+              >
+                Close Assistant
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
