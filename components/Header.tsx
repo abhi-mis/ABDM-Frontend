@@ -145,20 +145,15 @@ export default function Header() {
             className="bg-[#1a1b2e] rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden"
           >
             <div className="flex justify-between items-center p-4 border-b border-white/10">
-              <div className="flex items-center space-x-2">
-                <Bot className="w-5 h-5 text-indigo-400" />
-                <span className="text-white font-medium">AI Health Assistant</span>
-              </div>
+              <h2 className="text-xl font-semibold text-white">AI Health Assistant</h2>
               <button
                 onClick={() => setShowAssistant(false)}
-                className="text-white/60 hover:text-white transition-colors"
+                className="text-white/60 hover:text-white transition-colors p-1 hover:bg-white/10 rounded-lg"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
-            <div className="p-4">
-              <Assistant />
-            </div>
+            <Assistant />
           </motion.div>
         </div>
       )}

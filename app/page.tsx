@@ -1,4 +1,3 @@
-// app/pages/index.tsx
 'use client';
 
 import { useState } from 'react';
@@ -8,8 +7,9 @@ import WelcomePage from '@/components/WelcomePage';
 import AadharRegistration from '@/components/AadharRegistration';
 import AadharVerification from '@/components/AadharVerification';
 import ProfileSection from '@/components/ProfileSection';
-import Assistant from '@/components/Assistant'; // Import the Assistant component
+import Assistant from '@/components/Assistant';
 import { motion } from 'framer-motion';
+import { X } from 'lucide-react';
 
 interface FormData {
   accessToken: string;
@@ -49,7 +49,7 @@ export default function Home() {
     },
   });
 
-  const [showAssistant, setShowAssistant] = useState(false); // State to control Assistant visibility
+  const [showAssistant, setShowAssistant] = useState(false);
 
   const handleNext = () => {
     setCurrentStep((prev) => Math.min(prev + 1, steps.length));
@@ -135,18 +135,26 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Conditionally render the Assistant component */}
+        {/* Assistant Modal */}
         {showAssistant && (
-          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-            <div className="bg-white rounded-lg p-4 max-w-lg w-full">
+          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-[#1a1b2e] rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden"
+            >
+              <div className="flex justify-between items-center p-4 border-b border-white/10">
+                <h2 className="text-xl font-semibold text-white">AI Health Assistant</h2>
+                <button
+                  onClick={() => setShowAssistant(false)}
+                  className="text-white/60 hover:text-white transition-colors p-1 hover:bg-white/10 rounded-lg"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
               <Assistant />
-              <button
-                onClick={() => setShowAssistant(false)}
-                className="mt-4 bg-red-500 text-white px-4 py-2 rounded-full"
-              >
-                Close Assistant
-              </button>
-            </div>
+            </motion.div>
           </div>
         )}
       </div>

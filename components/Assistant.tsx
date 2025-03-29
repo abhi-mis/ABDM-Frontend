@@ -74,86 +74,70 @@ function Assistant() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center px-6 py-2 rounded-full bg-white/10 backdrop-blur-lg border border-white/20 mb-4">
-            <Stethoscope className="w-5 h-5 mr-2 text-blue-400" />
-            <span className="text-white/90">AI Health Assistant</span>
-          </div>
-          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">
-            Your Medical AI Companion
-          </h1>
-        </div>
-
-        {/* Chat Container */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 overflow-hidden">
-          {/* Messages */}
-          <div className="h-[600px] overflow-y-auto p-6">
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex items-start gap-4 mb-6 ${
-                  message.role === 'assistant' ? 'flex-row' : 'flex-row-reverse'
-                }`}
-              >
-                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                  message.role === 'assistant' 
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-500' 
-                    : 'bg-gradient-to-r from-purple-500 to-pink-500'
-                }`}>
-                  {message.role === 'assistant' ? (
-                    <Bot className="w-5 h-5 text-white" />
-                  ) : (
-                    <User className="w-5 h-5 text-white" />
-                  )}
-                </div>
-                <div className={`flex-1 px-4 py-3 rounded-2xl ${
-                  message.role === 'assistant' 
-                    ? 'bg-white/10 text-white/90' 
-                    : 'bg-white/20 text-white'
-                }`}>
-                  {message.content}
-                </div>
-              </div>
-            ))}
-            {isLoading && (
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-                  <Bot className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex-1 px-4 py-3 rounded-2xl bg-white/10">
-                  <Loader2 className="w-6 h-6 text-white/90 animate-spin" />
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Input Form */}
-          <form onSubmit={handleSubmit} className="p-4 border-t border-white/20">
-            <div className="flex gap-4">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask a health-related question..."
-                className="flex-1 bg-white/10 text-white placeholder-white/50 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
-              <button
-                type="submit"
-                disabled={isLoading || !input.trim()}
-                className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
-              >
-                <Send className="w-5 h-5" />
-              </button>
+    <div className="flex flex-col h-[600px]">
+      {/* Messages Container */}
+      <div className="flex-1 overflow-y-auto p-6">
+        {messages.map((message, index) => (
+          <div
+            key={index}
+            className={`flex items-start gap-4 mb-6 ${
+              message.role === 'assistant' ? 'flex-row' : 'flex-row-reverse'
+            }`}
+          >
+            <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+              message.role === 'assistant' 
+                ? 'bg-gradient-to-r from-blue-500 to-purple-500' 
+                : 'bg-gradient-to-r from-purple-500 to-pink-500'
+            }`}>
+              {message.role === 'assistant' ? (
+                <Bot className="w-5 h-5 text-white" />
+              ) : (
+                <User className="w-5 h-5 text-white" />
+              )}
             </div>
-          </form>
-        </div>
+            <div className={`flex-1 px-4 py-3 rounded-2xl ${
+              message.role === 'assistant' 
+                ? 'bg-white/10 text-white/90' 
+                : 'bg-white/20 text-white'
+            }`}>
+              {message.content}
+            </div>
+          </div>
+        ))}
+        {isLoading && (
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
+              <Bot className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1 px-4 py-3 rounded-2xl bg-white/10">
+              <Loader2 className="w-6 h-6 text-white/90 animate-spin" />
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input Form */}
+      <div className="p-4 border-t border-white/20">
+        <form onSubmit={handleSubmit} className="flex gap-4">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Ask a health-related question..."
+            className="flex-1 bg-white/10 text-white placeholder-white/50 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
+          <button
+            type="submit"
+            disabled={isLoading || !input.trim()}
+            className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
+          >
+            <Send className="w-5 h-5" />
+          </button>
+        </form>
 
         {/* Disclaimer */}
-        <div className="mt-6 flex items-start gap-2 text-white/60 text-sm">
+        <div className="mt-4 flex items-start gap-2 text-white/60 text-sm">
           <ShieldAlert className="w-5 h-5 flex-shrink-0 mt-0.5" />
           <p>
             This AI assistant provides general health information only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition.
