@@ -3,7 +3,7 @@ import axios from 'axios';
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'apiabdm.docbot.in';
 
 export const apiClient = axios.create({
-  baseURL: `//${BASE_URL}`, 
+  baseURL: `https://${BASE_URL}`, 
   headers: {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
