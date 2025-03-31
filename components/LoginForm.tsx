@@ -64,7 +64,7 @@ const LoginForm: React.FC = () => {
       
       // Retrieve the access token
       const accessToken = await getAccessToken();
-      
+      console.log('Access Token:', accessToken);
       // Call the sendAadharOTP function with both Aadhar number and access token
       await sendAadharOTP(aadharNumber, accessToken);
       

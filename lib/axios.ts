@@ -14,7 +14,7 @@ export const apiClient = axios.create({
 export const getAccessToken = async () => {
   try {
     const response = await apiClient.get('/api/access-token');
-    return response.data.accessToken;
+    return response.data.access_token; 
   } catch (error) {
     console.error('Error getting access token:', error);
     throw error;
@@ -87,11 +87,10 @@ export const getProfile = async () => {
     throw new Error('Authentication tokens not found');
   }
 
-  const response = await apiClient.get('/api/profile/account', {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'X-Token': xToken
-    }
+  // Send both tokens in request body
+  const response = await apiClient.post('/api/profile/account', {
+    accessToken,
+    xToken
   });
   return response.data;
 };
@@ -104,14 +103,37 @@ export const getQrCode = async () => {
     throw new Error('Authentication tokens not found');
   }
 
-  const response = await apiClient.get('/api/profile/qr', {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'X-Token': xToken
-    },
+  // Send both tokens in request body
+  const response = await apiClient.post('/api/profile/qr', {
+    accessToken,
+    xToken
+  }, {
     responseType: 'blob'
   });
-  return URL.createObjectURL(response.data);
+  
+  // Convert blob response to base64 string
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(response.data);
+  });
+};
+
+export const getJustProfile = async () => {
+  const accessToken = sessionStorage.getItem('token');
+  const xToken = sessionStorage.getItem('X_Token');
+
+  if (!accessToken || !xToken) {
+    throw new Error('Authentication tokens not found');
+  }
+
+  // Send both tokens in request body
+  const response = await apiClient.post('/api/profile', {
+    accessToken,
+    xToken
+  });
+  return response.data;
 };
 
 export const isAuthenticated = () => {

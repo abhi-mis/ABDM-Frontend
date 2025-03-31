@@ -3,7 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import LoginForm from '@/components/LoginForm';
-import Header from '@/components/Header';
+//import Header from '@/components/Header';
 import ProfileSection from '@/components/ProfileSection';
 import Home from '@/components/Home';
 import { isAuthenticated } from '../lib/axios';
@@ -23,7 +23,7 @@ function App() {
         <Route path="/" element={
           <PrivateRoute>
             <>
-              <Header />
+              {/* <Header /> */}
               <Home />
             </>
           </PrivateRoute>
@@ -31,7 +31,7 @@ function App() {
         <Route path="/profile" element={
           <PrivateRoute>
             <>
-              <Header />
+              {/* <Header /> */}
               <ProfileSection />
             </>
           </PrivateRoute>
