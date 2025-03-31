@@ -3,7 +3,7 @@ import axios from 'axios';
 const BASE_URL = 'apiabdm.docbot.in';
 
 export const apiClient = axios.create({
-  baseURL: `//${BASE_URL}`,
+  baseURL: `https://${BASE_URL}`,
   headers: {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
@@ -14,6 +14,7 @@ export const apiClient = axios.create({
 export const getAccessToken = async () => {
   try {
     const response = await apiClient.get('/api/access-token');
+    sessionStorage.setItem('token', response.data.access_token);
     return response.data.access_token; 
   } catch (error) {
     console.error('Error getting access token:', error);
@@ -56,9 +57,11 @@ export const verifyAadharOTP = async (aadharNumber: string, otp: string, mobile:
     
     const { tokens, ABHAProfile } = response.data;
     
-    if (tokens?.token) {
+    if (tokens) {
+      // Store the refresh token as X_Token header value
+      sessionStorage.setItem('X_Token', tokens.refreshToken);
+      // Store the access token
       sessionStorage.setItem('token', tokens.token);
-      sessionStorage.setItem('X_Token', tokens.token);
     }
     
     if (ABHAProfile) {
@@ -89,7 +92,7 @@ export const getProfile = async () => {
 
   const response = await apiClient.post('/api/profile/account', {
     accessToken,
-    xToken
+    'X_Token': xToken // Send as X_Token in payload
   });
   return response.data;
 };
@@ -104,7 +107,7 @@ export const getQrCode = async () => {
 
   const response = await apiClient.post('/api/profile/qr', {
     accessToken,
-    xToken
+    'X_Token': xToken // Send as X_Token in payload
   }, {
     responseType: 'blob'
   });
@@ -127,7 +130,7 @@ export const getJustProfile = async () => {
 
   const response = await apiClient.post('/api/profile', {
     accessToken,
-    xToken
+    'X_Token': xToken // Send as X_Token in payload
   });
   return response.data;
 };

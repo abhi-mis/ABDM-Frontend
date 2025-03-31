@@ -1,8 +1,8 @@
-"use client";  
+"use client";
 import React from 'react';
 import { User, LogOut } from 'lucide-react';
 import { logout, getProfile, getQrCode } from '../lib/axios';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 interface ProfileData {
   ABHANumber: string;
@@ -35,12 +35,25 @@ const ProfileSection: React.FC = () => {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const [profile, qr] = await Promise.all([
+        const [profile, qrData] = await Promise.all([
           getProfile(),
           getQrCode()
         ]);
+
+        // Convert base64 strings to proper data URLs if they don't already have the prefix
+        if (profile.profilePhoto && !profile.profilePhoto.startsWith('data:image')) {
+          profile.profilePhoto = `data:image/jpeg;base64,${profile.profilePhoto}`;
+        }
+        if (profile.kycPhoto && !profile.kycPhoto.startsWith('data:image')) {
+          profile.kycPhoto = `data:image/jpeg;base64,${profile.kycPhoto}`;
+        }
+
+        // Convert the QR code ArrayBuffer to a base64 string
+        const qrBlob = new Blob([qrData], { type: 'image/png' });
+        const qrUrl = URL.createObjectURL(qrBlob);
+        setQrCode(qrUrl);
+
         setProfileData(profile);
-        setQrCode(qr);
       } catch (error) {
         toast.error('Failed to load profile data');
         console.error('Error fetching profile:', error);
@@ -50,6 +63,13 @@ const ProfileSection: React.FC = () => {
     };
 
     fetchData();
+
+    // Cleanup function to revoke object URLs
+    return () => {
+      if (qrCode) {
+        URL.revokeObjectURL(qrCode);
+      }
+    };
   }, []);
 
   if (isLoading) {
@@ -85,12 +105,16 @@ const ProfileSection: React.FC = () => {
 
           {/* Profile Header */}
           <div className="flex items-center space-x-6 mb-8">
-            <div className="relative w-24 h-24 rounded-full overflow-hidden">
-              <img 
-                src={profileData.profilePhoto} 
-                alt={profileData.name}
-                className="w-full h-full object-cover"
-              />
+            <div className="relative w-24 h-24 rounded-full overflow-hidden bg-white/10">
+              {profileData.profilePhoto ? (
+                <img 
+                  src={profileData.profilePhoto}
+                  alt={profileData.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User className="w-full h-full p-4 text-white/60" />
+              )}
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">{profileData.name}</h1>
@@ -139,7 +163,7 @@ const ProfileSection: React.FC = () => {
               <>
                 <div className="space-y-4">
                   <InfoItem label="Full Name" value={profileData.name} />
-                  <InfoItem label="Gender" value={profileData.gender} />
+                  <InfoItem label="Gender" value={profileData.gender === 'F' ? 'Female' : profileData.gender === 'M' ? 'Male' : 'Other'} />
                   <InfoItem label="Date of Birth" 
                     value={`${profileData.dayOfBirth}/${profileData.monthOfBirth}/${profileData.yearOfBirth}`} 
                   />
@@ -175,6 +199,16 @@ const ProfileSection: React.FC = () => {
                 <InfoItem label="Verification Type" value={profileData.verificationType} />
                 <InfoItem label="Verification Status" value={profileData.verificationStatus} />
                 <InfoItem label="Created Date" value={profileData.createdDate} />
+                {profileData.kycPhoto && (
+                  <div className="bg-white/5 rounded-xl p-4">
+                    <p className="text-white/60 text-sm mb-4">KYC Photo</p>
+                    <img 
+                      src={profileData.kycPhoto} 
+                      alt="KYC Photo"
+                      className="max-w-sm rounded-lg"
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>
