@@ -1,9 +1,11 @@
 import axios from 'axios';
 
-const BASE_URL = 'apiabdm.docbot.in';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+const isBrowser = typeof window !== 'undefined';
 
 export const apiClient = axios.create({
-  baseURL: `https://${BASE_URL}`,
+  baseURL: `//${BASE_URL}`,
   headers: {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
@@ -14,7 +16,9 @@ export const apiClient = axios.create({
 export const getAccessToken = async () => {
   try {
     const response = await apiClient.get('/api/access-token');
-    sessionStorage.setItem('token', response.data.access_token);
+    if (isBrowser) {
+      sessionStorage.setItem('token', response.data.access_token);
+    }
     return response.data.access_token; 
   } catch (error) {
     console.error('Error getting access token:', error);
@@ -30,7 +34,7 @@ export const sendAadharOTP = async (aadharNumber: string, accessToken: string) =
       accessToken
     });
     
-    if (response.data.txnId) {
+    if (response.data.txnId && isBrowser) {
       sessionStorage.setItem('txnId', response.data.txnId);
     }
     
@@ -42,7 +46,7 @@ export const sendAadharOTP = async (aadharNumber: string, accessToken: string) =
 
 export const verifyAadharOTP = async (aadharNumber: string, otp: string, mobile: string, accessToken: string) => {
   try {
-    const txnId = sessionStorage.getItem('txnId');
+    const txnId = isBrowser ? sessionStorage.getItem('txnId') : null;
     
     if (!txnId) {
       throw new Error('Transaction ID not found');
@@ -57,14 +61,14 @@ export const verifyAadharOTP = async (aadharNumber: string, otp: string, mobile:
     
     const { tokens, ABHAProfile } = response.data;
     
-    if (tokens) {
+    if (tokens && isBrowser) {
       // Store the refresh token as X_Token header value
       sessionStorage.setItem('X_Token', tokens.refreshToken);
       // Store the access token
       sessionStorage.setItem('token', tokens.token);
     }
     
-    if (ABHAProfile) {
+    if (ABHAProfile && isBrowser) {
       sessionStorage.setItem('ABHAProfile', JSON.stringify(ABHAProfile));
     }
     
@@ -75,14 +79,20 @@ export const verifyAadharOTP = async (aadharNumber: string, otp: string, mobile:
 };
 
 export const logout = () => {
-  sessionStorage.removeItem('token');
-  sessionStorage.removeItem('X_Token');
-  sessionStorage.removeItem('txnId');
-  sessionStorage.removeItem('ABHAProfile');
-  window.location.href = '/login';
+  if (isBrowser) {
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('X_Token');
+    sessionStorage.removeItem('txnId');
+    sessionStorage.removeItem('ABHAProfile');
+    window.location.href = '/login';
+  }
 };
 
 export const getProfile = async () => {
+  if (!isBrowser) {
+    throw new Error('Cannot access profile outside browser environment');
+  }
+
   const accessToken = sessionStorage.getItem('token');
   const xToken = sessionStorage.getItem('X_Token');
 
@@ -98,6 +108,10 @@ export const getProfile = async () => {
 };
 
 export const getQrCode = async () => {
+  if (!isBrowser) {
+    throw new Error('Cannot access QR code outside browser environment');
+  }
+
   const accessToken = sessionStorage.getItem('token');
   const xToken = sessionStorage.getItem('X_Token');
 
@@ -121,6 +135,10 @@ export const getQrCode = async () => {
 };
 
 export const getJustProfile = async () => {
+  if (!isBrowser) {
+    throw new Error('Cannot access profile outside browser environment');
+  }
+
   const accessToken = sessionStorage.getItem('token');
   const xToken = sessionStorage.getItem('X_Token');
 
@@ -136,5 +154,8 @@ export const getJustProfile = async () => {
 };
 
 export const isAuthenticated = () => {
+  if (!isBrowser) {
+    return false;
+  }
   return !!sessionStorage.getItem('token');
 };

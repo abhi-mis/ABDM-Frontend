@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
-import { User, LogOut } from 'lucide-react';
-import { logout, getProfile, getQrCode } from '../lib/axios';
+import { User, LogOut, Download } from 'lucide-react';
+import { logout, getProfile, getQrCode, getJustProfile } from '../lib/axios';
 import { toast } from 'react-hot-toast';
 
 interface ProfileData {
@@ -29,15 +29,17 @@ interface ProfileData {
 const ProfileSection: React.FC = () => {
   const [profileData, setProfileData] = React.useState<ProfileData | null>(null);
   const [qrCode, setQrCode] = React.useState<string | null>(null);
+  const [abhaCard, setAbhaCard] = React.useState<string | null>(null);
   const [activeTab, setActiveTab] = React.useState('basic');
   const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const [profile, qrData] = await Promise.all([
+        const [profile, qrData, justProfile] = await Promise.all([
           getProfile(),
-          getQrCode()
+          getQrCode(),
+          getJustProfile()
         ]);
 
         // Convert base64 strings to proper data URLs if they don't already have the prefix
@@ -52,6 +54,11 @@ const ProfileSection: React.FC = () => {
         const qrBlob = new Blob([qrData], { type: 'image/png' });
         const qrUrl = URL.createObjectURL(qrBlob);
         setQrCode(qrUrl);
+
+        // Set ABHA Card image
+        if (justProfile.image) {
+          setAbhaCard(`data:image/png;base64,${justProfile.image}`);
+        }
 
         setProfileData(profile);
       } catch (error) {
@@ -71,6 +78,17 @@ const ProfileSection: React.FC = () => {
       }
     };
   }, []);
+
+  const handleDownloadAbhaCard = () => {
+    if (abhaCard) {
+      const link = document.createElement('a');
+      link.href = abhaCard;
+      link.download = 'ABHA-Card.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -155,6 +173,16 @@ const ProfileSection: React.FC = () => {
             >
               KYC Details
             </button>
+            <button
+              onClick={() => setActiveTab('abha')}
+              className={`px-6 py-2 rounded-full transition-all ${
+                activeTab === 'abha' 
+                  ? 'bg-purple-600 text-white' 
+                  : 'bg-white/10 text-white/60 hover:bg-white/20'
+              }`}
+            >
+              ABHA Card
+            </button>
           </div>
 
           {/* Content Sections */}
@@ -206,6 +234,29 @@ const ProfileSection: React.FC = () => {
                       src={profileData.kycPhoto} 
                       alt="KYC Photo"
                       className="max-w-sm rounded-lg"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'abha' && (
+              <div className="col-span-2 space-y-6">
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleDownloadAbhaCard}
+                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 transition-colors rounded-lg text-white"
+                  >
+                    <Download className="w-5 h-5" />
+                    Download ABHA Card
+                  </button>
+                </div>
+                {abhaCard && (
+                  <div className="bg-white/5 rounded-xl p-4">
+                    <img 
+                      src={abhaCard} 
+                      alt="ABHA Card"
+                      className="w-full rounded-lg shadow-lg"
                     />
                   </div>
                 )}

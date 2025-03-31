@@ -1,19 +1,18 @@
 "use client";
 import React, { useState } from 'react';
-import { Menu, X, Activity, User, FileText, Shield, Stethoscope, Bot } from 'lucide-react';
+import { Menu, X, Activity, User, FileText, Shield, Stethoscope, Bot, Home } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import VerifyAbha from './VerifyAbha';
-import Assistant from './Assistant';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
-  const [showAssistant, setShowAssistant] = useState(false);
 
   const menuItems = [
-    { name: 'AI Health Assistant', icon: Bot, onClick: () => setShowAssistant(true) },
-    { name: 'My Health Records', icon: FileText, href: '/records' },
-    { name: 'Health Profile', icon: User, href: '/profile' }
+    { name: 'Home', icon: Home, href: '/' },
+    { name: 'AI Health Assistant', icon: Bot, href: '/Assistant' },
+    // { name: 'My Health Records', icon: FileText, href: '/records' },
+    // { name: 'Health Profile', icon: User, href: '/profile' }
   ];
 
   const handleVerifyClick = (e: React.MouseEvent) => {
@@ -33,11 +32,14 @@ export default function Header() {
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
               <div className="relative w-10 h-10 overflow-hidden rounded-xl transform transition-transform hover:scale-105">
-                <img 
-                  src="https://media.licdn.com/dms/image/v2/D4D0BAQFzisxNGVY4Lw/company-logo_200_200/company-logo_200_200/0/1735566654386/docbotplus_logo?e=2147483647&v=beta&t=1o7lOa0gbZFhBBJQPjX7rP4B--K46zfF6EWIW8fk9gk"
-                  alt="DocBot Logo"
-                  className="w-full h-full object-cover"
-                />
+                <a href="/" className="relative w-10 h-10 overflow-hidden rounded-xl transform transition-transform hover:scale-105">
+                  <img
+                    src="https://media.licdn.com/dms/image/v2/D4D0BAQFzisxNGVY4Lw/company-logo_200_200/company-logo_200_200/0/1735566654386/docbotplus_logo?e=2147483647&v=beta&t=1o7lOa0gbZFhBBJQPjX7rP4B--K46zfF6EWIW8fk9gk"
+                    alt="DocBot Logo"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/30 to-purple-600/30 mix-blend-overlay" />
+                </a>
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/30 to-purple-600/30 mix-blend-overlay" />
               </div>
               <div className="flex flex-col">
@@ -57,7 +59,6 @@ export default function Header() {
                   <motion.a
                     key={item.name}
                     href={item.href}
-                    onClick={item.onClick}
                     className="flex items-center space-x-1 text-white/70 hover:text-white transition-colors cursor-pointer"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -103,20 +104,17 @@ export default function Header() {
                 className="md:hidden mt-4 bg-[#1a1b2e]/90 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden"
               >
                 {menuItems.map((item) => (
-                  <motion.div
+                  <motion.a
                     key={item.name}
-                    onClick={() => {
-                      if (item.onClick) item.onClick();
-                      setIsMenuOpen(false);
-                    }}
+                    href={item.href}
                     className="flex items-center space-x-3 px-6 py-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
                     whileTap={{ scale: 0.98 }}
                   >
                     <item.icon className="w-5 h-5" />
                     <span>{item.name}</span>
-                  </motion.div>
+                  </motion.a>
                 ))}
-                
+
                 <motion.button
                   onClick={handleVerifyClick}
                   className="w-full flex items-center space-x-3 px-6 py-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors"
@@ -134,29 +132,6 @@ export default function Header() {
       <AnimatePresence>
         {showVerifyModal && <VerifyAbha onClose={closeModal} isOpen={showVerifyModal} />}
       </AnimatePresence>
-
-      {/* AI Assistant Modal */}
-      {showAssistant && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-[#1a1b2e] rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden"
-          >
-            <div className="flex justify-between items-center p-4 border-b border-white/10">
-              <h2 className="text-xl font-semibold text-white">AI Health Assistant</h2>
-              <button
-                onClick={() => setShowAssistant(false)}
-                className="text-white/60 hover:text-white transition-colors p-1 hover:bg-white/10 rounded-lg"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            <Assistant />
-          </motion.div>
-        </div>
-      )}
     </>
   );
 }

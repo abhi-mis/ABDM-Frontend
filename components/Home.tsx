@@ -6,7 +6,7 @@ import WelcomePage from './WelcomePage';
 import AadharRegistration from './AadharRegistration';
 import AadharVerification from './AadharVerification';
 import ProfileSection from './ProfileSection';
-import Assistant from './Assistant';
+import Assistant from '../app/Assistant/page';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
@@ -128,37 +128,17 @@ export default function Home() {
         </motion.div>
 
         {/* Button to open Assistant */}
-        <div className="text-center mt-8">
+        {/* <div className="text-center mt-8">
           <button
             onClick={() => setShowAssistant(true)}
             className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-2 rounded-full hover:opacity-90 transition-opacity"
           >
             Open AI Health Assistant
           </button>
-        </div>
+        </div> */}
 
         {/* Assistant Modal */}
-        {showAssistant && (
-          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#1a1b2e] rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden"
-            >
-              <div className="flex justify-between items-center p-4 border-b border-white/10">
-                <h2 className="text-xl font-semibold text-white">AI Health Assistant</h2>
-                <button
-                  onClick={() => setShowAssistant(false)}
-                  className="text-white/60 hover:text-white transition-colors p-1 hover:bg-white/10 rounded-lg"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-              <Assistant />
-            </motion.div>
-          </div>
-        )}
+      
       </div>
     </div>
   );

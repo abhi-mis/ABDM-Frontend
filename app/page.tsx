@@ -3,9 +3,9 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import LoginForm from '@/components/LoginForm';
-//import Header from '@/components/Header';
 import ProfileSection from '@/components/ProfileSection';
 import Home from '@/components/Home';
+import Assistant from '@/app/Assistant/page'; // Import the new component
 import { isAuthenticated } from '../lib/axios';
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
@@ -36,6 +36,15 @@ function App() {
             </>
           </PrivateRoute>
         } />
+       <Route path="/assistant" element={
+  <PrivateRoute>
+    <>
+      {/* <Header /> */}
+      <Assistant />
+    </>
+  </PrivateRoute>
+} />
+       
         {/* Catch all route - redirect to login if not authenticated, home if authenticated */}
         <Route path="*" element={
           isAuthenticated() ? <Navigate to="/" replace /> : <Navigate to="/login" replace />
