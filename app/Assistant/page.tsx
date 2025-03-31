@@ -12,7 +12,7 @@ export default function Assistant() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: 'Hello! I am your medical AI assistant. I can help you with health-related questions and provide general medical information. Please note that I am not a replacement for professional medical care - always consult with a qualified healthcare provider for specific medical advice.',
+      content: 'Hello! I am Aanya, your medical AI assistant. I can help you with health-related questions and provide general medical information. Please note that I am not a replacement for professional medical care - always consult with a qualified healthcare provider for specific medical advice.',
     }
   ]);
   const [input, setInput] = useState('');
