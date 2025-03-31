@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { KeyRound, User, Loader2, Shield, CheckCircle2, AlertCircle } from 'lucide-react';
-import { sendAadharOTP, verifyAadharOTP, getAccessToken } from '../lib/axios';
+import { sendAadharOTP, verifyAadharOTP, getAccessToken } from '../../lib/axios';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';

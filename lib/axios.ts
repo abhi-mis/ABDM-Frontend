@@ -1,11 +1,11 @@
 import axios from 'axios';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const BASE_URL = "apiabdm.docbot.in";
 
 const isBrowser = typeof window !== 'undefined';
 
 export const apiClient = axios.create({
-  baseURL: `//${BASE_URL}`,
+  baseURL: `https://${BASE_URL}`,
   headers: {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
@@ -107,6 +107,7 @@ export const getProfile = async () => {
   return response.data;
 };
 
+
 export const getQrCode = async () => {
   if (!isBrowser) {
     throw new Error('Cannot access QR code outside browser environment');
@@ -119,20 +120,13 @@ export const getQrCode = async () => {
     throw new Error('Authentication tokens not found');
   }
 
-  const response = await apiClient.post('/api/profile/qr', {
-    accessToken,
-    'X_Token': xToken // Send as X_Token in payload
-  }, {
-    responseType: 'blob'
-  });
-  
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(response.data);
-  });
+    const response = await apiClient.post('/api/profile/qr', {
+      accessToken,
+      'X_Token': xToken // Send as X_Token in payload
+    });
+    return response.data;
 };
+  
 
 export const getJustProfile = async () => {
   if (!isBrowser) {

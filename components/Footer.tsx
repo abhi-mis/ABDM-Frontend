@@ -2,8 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import nhaLogo from './images/NHA.png';
-import ayushmanLogo from './images/ABh.png';
+
 
 export default function Footer() {
   const govLogos = [

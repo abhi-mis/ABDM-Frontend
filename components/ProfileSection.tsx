@@ -2,7 +2,7 @@
 import React from 'react';
 import { User, LogOut, Download } from 'lucide-react';
 import { logout, getProfile, getQrCode, getJustProfile } from '../lib/axios';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 interface ProfileData {
   ABHANumber: string;
@@ -36,13 +36,13 @@ const ProfileSection: React.FC = () => {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const [profile, qrData, justProfile] = await Promise.all([
+        const [profile, qrResponse, justProfile] = await Promise.all([
           getProfile(),
           getQrCode(),
           getJustProfile()
         ]);
 
-        // Convert base64 strings to proper data URLs if they don't already have the prefix
+        // Handle profile photos
         if (profile.profilePhoto && !profile.profilePhoto.startsWith('data:image')) {
           profile.profilePhoto = `data:image/jpeg;base64,${profile.profilePhoto}`;
         }
@@ -50,10 +50,13 @@ const ProfileSection: React.FC = () => {
           profile.kycPhoto = `data:image/jpeg;base64,${profile.kycPhoto}`;
         }
 
-        // Set QR code directly since it's already a data URL from getQrCode
-        setQrCode(qrData as string);
+        // Handle QR code - now expecting { qrCode: "base64url" } format
+        if (qrResponse && qrResponse.qrCode) {
+          const qrDataUrl = `data:image/png;base64,${qrResponse.qrCode}`;
+          setQrCode(qrDataUrl);
+        }
 
-        // Set ABHA Card image
+        // Handle ABHA Card
         if (justProfile.image) {
           setAbhaCard(`data:image/png;base64,${justProfile.image}`);
         }
@@ -75,6 +78,17 @@ const ProfileSection: React.FC = () => {
       const link = document.createElement('a');
       link.href = abhaCard;
       link.download = 'ABHA-Card.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const handleDownloadQrCode = () => {
+    if (qrCode) {
+      const link = document.createElement('a');
+      link.href = qrCode;
+      link.download = 'ABHA-QR.png';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -189,10 +203,25 @@ const ProfileSection: React.FC = () => {
                   <InfoItem label="Mobile" value={profileData.mobile} />
                 </div>
                 <div className="flex flex-col items-center justify-center bg-white/5 rounded-2xl p-6">
-                  {qrCode && (
-                    <img src={qrCode} alt="Profile QR Code" className="w-48 h-48 mb-4" />
+                  {qrCode ? (
+                    <>
+                      <img 
+                        src={qrCode} 
+                        alt="Profile QR Code" 
+                        className="w-48 h-48 mb-4 bg-white p-2 rounded-lg"
+                      />
+                      <button
+                        onClick={handleDownloadQrCode}
+                        className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 transition-colors rounded-lg text-white mt-4"
+                      >
+                        <Download className="w-5 h-5" />
+                        Download QR Code
+                      </button>
+                    </>
+                  ) : (
+                    <div className="text-white/60">Loading QR code...</div>
                   )}
-                  <p className="text-white/60 text-center">
+                  <p className="text-white/60 text-center mt-4">
                     Scan this QR code to view your health information
                   </p>
                 </div>
