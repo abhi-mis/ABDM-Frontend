@@ -26,7 +26,7 @@ export const sendAadharOTP = async (aadharNumber: string, accessToken: string) =
   try {
     const response = await apiClient.post('/api/send-otp', {
       aadhar: aadharNumber,
-      accessToken: accessToken
+      accessToken
     });
     
     if (response.data.txnId) {
@@ -87,7 +87,6 @@ export const getProfile = async () => {
     throw new Error('Authentication tokens not found');
   }
 
-  // Send both tokens in request body
   const response = await apiClient.post('/api/profile/account', {
     accessToken,
     xToken
@@ -103,7 +102,6 @@ export const getQrCode = async () => {
     throw new Error('Authentication tokens not found');
   }
 
-  // Send both tokens in request body
   const response = await apiClient.post('/api/profile/qr', {
     accessToken,
     xToken
@@ -111,7 +109,6 @@ export const getQrCode = async () => {
     responseType: 'blob'
   });
   
-  // Convert blob response to base64 string
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onloadend = () => resolve(reader.result);
@@ -128,7 +125,6 @@ export const getJustProfile = async () => {
     throw new Error('Authentication tokens not found');
   }
 
-  // Send both tokens in request body
   const response = await apiClient.post('/api/profile', {
     accessToken,
     xToken
