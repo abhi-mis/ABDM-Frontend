@@ -50,10 +50,8 @@ const ProfileSection: React.FC = () => {
           profile.kycPhoto = `data:image/jpeg;base64,${profile.kycPhoto}`;
         }
 
-        // Convert the QR code ArrayBuffer to a base64 string
-        const qrBlob = new Blob([qrData], { type: 'image/png' });
-        const qrUrl = URL.createObjectURL(qrBlob);
-        setQrCode(qrUrl);
+        // Set QR code directly since it's already a data URL from getQrCode
+        setQrCode(qrData as string);
 
         // Set ABHA Card image
         if (justProfile.image) {
@@ -70,13 +68,6 @@ const ProfileSection: React.FC = () => {
     };
 
     fetchData();
-
-    // Cleanup function to revoke object URLs
-    return () => {
-      if (qrCode) {
-        URL.revokeObjectURL(qrCode);
-      }
-    };
   }, []);
 
   const handleDownloadAbhaCard = () => {
