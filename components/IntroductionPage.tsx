@@ -1,3 +1,4 @@
+"use client";  
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Activity, FileText, Shield, Zap, Database, Share2, CreditCard, Network, CheckCircle2, Laptop, Guitar as Hospital, Heart, Clock, Users, BookOpen, Award, TrendingUp, ArrowRight } from 'lucide-react';

@@ -1,125 +1,205 @@
-import React, { useEffect, useState } from 'react';
-import { User, Loader2, Download } from 'lucide-react';
-import { motion } from 'framer-motion';
+"use client";  
+import React from 'react';
+import { User, LogOut } from 'lucide-react';
+import { logout, getProfile, getQrCode } from '../lib/axios';
 import toast from 'react-hot-toast';
-import { apiClient } from '../lib/axios';
-
-interface ProfileSectionProps {
-  onBack: () => void;
-}
 
 interface ProfileData {
-  image?: string;
+  ABHANumber: string;
+  preferredAbhaAddress: string;
+  mobile: string;
+  name: string;
+  gender: string;
+  yearOfBirth: string;
+  dayOfBirth: string;
+  monthOfBirth: string;
+  status: string;
+  stateName: string;
+  districtName: string;
+  pincode: string;
+  address: string;
+  profilePhoto: string;
+  kycPhoto: string;
+  kycVerified: boolean;
+  verificationStatus: string;
+  verificationType: string;
+  createdDate: string;
 }
 
-export default function ProfileSection({ onBack }: ProfileSectionProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [profileData, setProfileData] = useState<ProfileData | null>(null);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+const ProfileSection: React.FC = () => {
+  const [profileData, setProfileData] = React.useState<ProfileData | null>(null);
+  const [qrCode, setQrCode] = React.useState<string | null>(null);
+  const [activeTab, setActiveTab] = React.useState('basic');
+  const [isLoading, setIsLoading] = React.useState(true);
 
-  const handleDownload = () => {
-    if (profileData?.image) {
+  React.useEffect(() => {
+    const fetchData = async () => {
       try {
-        const link = document.createElement('a');
-        link.href = `data:image/png;base64,${profileData.image}`;
-        link.download = 'profile-photo.png';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        toast.success('Photo downloaded successfully!', {
-          duration: 3000,
-          position: 'top-center'
-        });
+        const [profile, qr] = await Promise.all([
+          getProfile(),
+          getQrCode()
+        ]);
+        setProfileData(profile);
+        setQrCode(qr);
       } catch (error) {
-        console.error('Error downloading image:', error);
-        toast.error('Failed to download photo', {
-          duration: 3000,
-          position: 'top-center'
-        });
+        toast.error('Failed to load profile data');
+        console.error('Error fetching profile:', error);
+      } finally {
+        setIsLoading(false);
       }
-    }
-  };
+    };
 
-  useEffect(() => {
-    fetchProfileData();
+    fetchData();
   }, []);
-
-  const fetchProfileData = async () => {
-    setIsLoading(true);
-    try {
-      const accessToken = sessionStorage.getItem('token');
-      const X_Token = sessionStorage.getItem('X_Token');
-
-      if (!accessToken || !X_Token) {
-        throw new Error('Authentication tokens not found');
-      }
-
-      const { data } = await apiClient.post('/api/profile', {
-        accessToken,
-        X_Token
-      });
-      
-      if (data.image) {
-        setProfileImage(`data:image/png;base64,${data.image}`);
-      }
-      
-      setProfileData(data);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch profile';
-      toast.error(errorMessage, {
-        duration: 4000,
-        position: 'top-center'
-      });
-      console.error('Error fetching profile:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-purple-500 mx-auto mb-4" />
-          <p className="text-white/80 text-lg">Loading image...</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-white text-xl">Loading your profile...</div>
+      </div>
+    );
+  }
+
+  if (!profileData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-white text-xl">Failed to load profile data</div>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center justify-center min-h-[400px]">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6 }}
-        className="relative group"
-      >
-        {profileImage ? (
-          <>
-            <div className="rounded-3xl overflow-hidden shadow-xl transform transition-transform group-hover:scale-105">
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900">
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8">
+          {/* Header with Logout */}
+          <div className="flex justify-end mb-6">
+            <button
+              onClick={logout}
+              className="flex items-center space-x-2 text-white/60 hover:text-white transition-colors"
+            >
+              <LogOut className="w-5 h-5" />
+              <span>Logout</span>
+            </button>
+          </div>
+
+          {/* Profile Header */}
+          <div className="flex items-center space-x-6 mb-8">
+            <div className="relative w-24 h-24 rounded-full overflow-hidden">
               <img 
-                src={profileImage} 
-                alt="Profile"
-                className="max-w-full h-auto"
+                src={profileData.profilePhoto} 
+                alt={profileData.name}
+                className="w-full h-full object-cover"
               />
             </div>
-            <button
-              onClick={handleDownload}
-              className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 bg-white/10 backdrop-blur-lg p-3 rounded-full hover:bg-white/20 transition-colors duration-200 group-hover:opacity-100 opacity-0 shadow-lg"
-              title="Download photo"
-            >
-              <Download className="w-5 h-5 text-black" />
-            </button>
-          </>
-        ) : (
-          <div className="bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 w-32 h-32 rounded-3xl flex items-center justify-center transform transition-transform hover:scale-105">
-            <User className="text-white w-16 h-16" />
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">{profileData.name}</h1>
+              <p className="text-white/80">ABHA Number: {profileData.ABHANumber}</p>
+              <p className="text-white/60">{profileData.preferredAbhaAddress}</p>
+            </div>
           </div>
-        )}
-      </motion.div>
+
+          {/* Navigation Tabs */}
+          <div className="flex space-x-4 mb-8">
+            <button
+              onClick={() => setActiveTab('basic')}
+              className={`px-6 py-2 rounded-full transition-all ${
+                activeTab === 'basic' 
+                  ? 'bg-purple-600 text-white' 
+                  : 'bg-white/10 text-white/60 hover:bg-white/20'
+              }`}
+            >
+              Basic Info
+            </button>
+            <button
+              onClick={() => setActiveTab('address')}
+              className={`px-6 py-2 rounded-full transition-all ${
+                activeTab === 'address' 
+                  ? 'bg-purple-600 text-white' 
+                  : 'bg-white/10 text-white/60 hover:bg-white/20'
+              }`}
+            >
+              Address
+            </button>
+            <button
+              onClick={() => setActiveTab('kyc')}
+              className={`px-6 py-2 rounded-full transition-all ${
+                activeTab === 'kyc' 
+                  ? 'bg-purple-600 text-white' 
+                  : 'bg-white/10 text-white/60 hover:bg-white/20'
+              }`}
+            >
+              KYC Details
+            </button>
+          </div>
+
+          {/* Content Sections */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {activeTab === 'basic' && (
+              <>
+                <div className="space-y-4">
+                  <InfoItem label="Full Name" value={profileData.name} />
+                  <InfoItem label="Gender" value={profileData.gender} />
+                  <InfoItem label="Date of Birth" 
+                    value={`${profileData.dayOfBirth}/${profileData.monthOfBirth}/${profileData.yearOfBirth}`} 
+                  />
+                  <InfoItem label="Mobile" value={profileData.mobile} />
+                </div>
+                <div className="flex flex-col items-center justify-center bg-white/5 rounded-2xl p-6">
+                  {qrCode && (
+                    <img src={qrCode} alt="Profile QR Code" className="w-48 h-48 mb-4" />
+                  )}
+                  <p className="text-white/60 text-center">
+                    Scan this QR code to view your health information
+                  </p>
+                </div>
+              </>
+            )}
+
+            {activeTab === 'address' && (
+              <div className="col-span-2 space-y-4">
+                <InfoItem label="Address" value={profileData.address} />
+                <InfoItem label="State" value={profileData.stateName} />
+                <InfoItem label="District" value={profileData.districtName} />
+                <InfoItem label="Pincode" value={profileData.pincode} />
+              </div>
+            )}
+
+            {activeTab === 'kyc' && (
+              <div className="col-span-2 space-y-4">
+                <InfoItem 
+                  label="KYC Status" 
+                  value={profileData.kycVerified ? 'Verified' : 'Not Verified'} 
+                  verified={profileData.kycVerified}
+                />
+                <InfoItem label="Verification Type" value={profileData.verificationType} />
+                <InfoItem label="Verification Status" value={profileData.verificationStatus} />
+                <InfoItem label="Created Date" value={profileData.createdDate} />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+const InfoItem: React.FC<{
+  label: string;
+  value: string;
+  verified?: boolean;
+}> = ({ label, value, verified }) => (
+  <div className="bg-white/5 rounded-xl p-4">
+    <p className="text-white/60 text-sm mb-1">{label}</p>
+    <div className="flex items-center">
+      <p className="text-white text-lg">{value}</p>
+      {verified !== undefined && (
+        <span className={`ml-2 text-sm ${verified ? 'text-green-400' : 'text-red-400'}`}>
+          {verified ? '✓ Verified' : '✗ Not Verified'}
+        </span>
+      )}
+    </div>
+  </div>
+);
+
+export default ProfileSection;

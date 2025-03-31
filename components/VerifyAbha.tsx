@@ -1,3 +1,4 @@
+"use client";  
 import React, { useState, useEffect, useRef, KeyboardEvent } from 'react';
 import { motion } from 'framer-motion';
 import { Loader2, X, CheckCircle } from 'lucide-react';

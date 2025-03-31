@@ -1,3 +1,4 @@
+"use client";
 import { useState } from 'react';
 import { CreditCard, Loader2, ArrowLeft, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
