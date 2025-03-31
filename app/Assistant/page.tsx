@@ -68,7 +68,7 @@ export default function Assistant() {
           "X-Title": "Medical Assistant"
         },
         body: JSON.stringify({
-          model: "deepseek/deepseek-r1-zero:free",
+          model: "sophosympatheia/rogue-rose-103b-v0.2:free",
           messages: [
             {
               role: "system",
