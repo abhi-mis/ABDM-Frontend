@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { Menu, X, Stethoscope, Bot, Home } from 'lucide-react';
+import { Menu, X, Stethoscope, Bot, Home, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import VerifyAbha from './VerifyAbha';
 
@@ -10,10 +10,8 @@ export default function Header() {
 
   const menuItems = [
     { name: 'Home', icon: Home, href: '/' },
-    { name: 'AI Health Assistant', icon: Bot, href: '/Assistant' },
-    { name: 'Profile', icon: Bot, href: '/Profile' },
-    // { name: 'My Health Records', icon: FileText, href: '/records' },
-    // { name: 'Health Profile', icon: User, href: '/profile' }
+    { name: 'Profile', icon: User, href: '/Profile' },
+    { name: 'Talk to Ira', icon: Bot, href: '/Assistant' },
   ];
 
   const handleVerifyClick = (e: React.MouseEvent) => {

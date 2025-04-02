@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Shield, Loader2, CheckCircle2, AlertCircle, User, Download } from 'lucide-react';
+import { Shield, Loader2, CheckCircle2, AlertCircle, User, Download} from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
@@ -132,47 +132,51 @@ export default function ViewProfile() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-
+  
     try {
       const accessToken = sessionStorage.getItem('token');
       const txnId = sessionStorage.getItem('txnId');
-
+  
       if (!accessToken || !txnId) throw new Error('Missing required session data');
-
+  
       const response = await apiClient.post('/api/verify-otp', {
         txnId,
         mobile: formData.mobile,
         otp: formData.otp,
         accessToken
       });
-
+  
       const { tokens, ABHAProfile } = response.data;
-
+  
       if (tokens) {
-        sessionStorage.setItem('X_Token', tokens.refreshToken);
-        sessionStorage.setItem('token', tokens.token);
+     
+        if (tokens.token) {
+          sessionStorage.setItem('X_Token', tokens.token);
+        }
+        
       }
-
+  
       if (ABHAProfile) {
         sessionStorage.setItem('ABHAProfile', JSON.stringify(ABHAProfile));
       }
-
+  
       // Fetch profile data
       const [profile, qrResponse, justProfile] = await Promise.all([
         apiClient.post('/api/profile/account', {
-          accessToken: tokens.token,
-          'X_Token': tokens.refreshToken
+          
+          accessToken: sessionStorage.getItem('token'),
+          'X_Token': sessionStorage.getItem('X_Token') // Fetching token2 as X_Token
         }),
         apiClient.post('/api/profile/qr', {
-          accessToken: tokens.token,
-          'X_Token': tokens.refreshToken
+          accessToken: sessionStorage.getItem('token'),
+          'X_Token': sessionStorage.getItem('X_Token') // Fetching token2 as X_Token
         }),
         apiClient.post('/api/profile', {
-          accessToken: tokens.token,
-          'X_Token': tokens.refreshToken
+          accessToken: sessionStorage.getItem('token'),
+          'X_Token': sessionStorage.getItem('X_Token') // Fetching token2 as X_Token
         })
       ]);
-
+  
       // Handle profile data
       const profileData = profile.data;
       if (profileData.profilePhoto && !profileData.profilePhoto.startsWith('data:image')) {
@@ -181,17 +185,17 @@ export default function ViewProfile() {
       if (profileData.kycPhoto && !profileData.kycPhoto.startsWith('data:image')) {
         profileData.kycPhoto = `data:image/jpeg;base64,${profileData.kycPhoto}`;
       }
-
+  
       // Handle QR code
       if (qrResponse.data && qrResponse.data.qrCode) {
         setQrCode(`data:image/png;base64,${qrResponse.data.qrCode}`);
       }
-
+  
       // Handle ABHA Card
       if (justProfile.data.image) {
         setAbhaCard(`data:image/png;base64,${justProfile.data.image}`);
       }
-
+  
       setProfileData(profileData);
       setStep('profile');
       toast.success('Verification successful!');
