@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { Menu, X, Activity, User, FileText, Shield, Stethoscope, Bot, Home } from 'lucide-react';
+import { Menu, X, Stethoscope, Bot, Home } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import VerifyAbha from './VerifyAbha';
 
@@ -11,6 +11,7 @@ export default function Header() {
   const menuItems = [
     { name: 'Home', icon: Home, href: '/' },
     { name: 'AI Health Assistant', icon: Bot, href: '/Assistant' },
+    { name: 'Profile', icon: Bot, href: '/Profile' },
     // { name: 'My Health Records', icon: FileText, href: '/records' },
     // { name: 'Health Profile', icon: User, href: '/profile' }
   ];
@@ -49,7 +50,7 @@ export default function Header() {
                   </span>
                   <Bot className="w-5 h-5 text-indigo-400" />
                 </div>
-                <span className="text-xs text-white/60">AI-Powered Healthcare Assistant</span>
+                <span className="text-xs text-white/60">Your Health, Our mission</span>
               </div>
             </div>
 

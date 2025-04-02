@@ -58,7 +58,7 @@
 "use client";
 import React from 'react';
 import { Toaster } from 'react-hot-toast';
-import ProfileSection from '@/components/ProfileSection';
+import Profile from '@/app/Profile/page';
 import Home from '@/components/Home';
 import Assistant from '@/app/Assistant/page';
 import { usePathname } from 'next/navigation';
@@ -72,7 +72,7 @@ function App() {
       case '/':
         return <Home />;
       case '/profile':
-        return <ProfileSection />;
+        return <Profile />;
       case '/assistant':
         return <Assistant />;
       default:

@@ -1,26 +1,42 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader2, ShieldAlert } from 'lucide-react';
+import { Send, User, Loader2, ShieldAlert } from 'lucide-react';
 
+// Types
 interface Message {
   role: 'assistant' | 'user';
   content: string;
-  timestamp?: string; // Make timestamp optional initially
+  timestamp?: string;
 }
 
-export default function Assistant() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'assistant',
-      content: 'Hello! I am Ira, your medical AI assistant. I can help you with health-related questions and provide general medical information. Please note that I am not a replacement for professional medical care - always consult with a qualified healthcare provider for specific medical advice.',
-    }
-  ]);
+// Constants
+const INITIAL_MESSAGE: Message = {
+  role: 'assistant',
+  content: 'Hello! I am Ira, your medical AI assistant. I can help you with health-related questions and provide general medical information. Please note that I am not a replacement for professional medical care - always consult with a qualified healthcare provider for specific medical advice.',
+};
+
+const SYSTEM_PROMPT = `"You are a highly professional and knowledgeable Medical AI Assistant. Your sole purpose is to provide clear, structured, and easy-to-read health-related information.
+
+- Always use bullet points, numbered lists, and headers to improve readability.
+- Ensure responses are well-organized, with separate sections for causes, remedies, and when to seek medical attention.
+- Avoid long paragraphs; instead, break information into digestible sections.
+- Always end responses with a professional disclaimer, reminding users to consult a healthcare provider for personalized medical advice.
+
+You must not answer non-medical questions. If asked, politely inform the user that you can only discuss medical and health-related topics."`;
+
+const IRA_IMAGE = "https://media-hosting.imagekit.io/1b7a9c823d964ea2/Ira.png?Expires=1838141441&Key-Pair-Id=K2ZIVPTIP2VGHC&Signature=zepo1vWAC7UXA74FIhfEB7Z4kfcVGDaZ~Q~q3zPB6MVIMkrFAtszCFfkw7ZR0iohoHh2h1BalcVz63X0ZlQxp~U80JJJxBTWDVydY87608XwVur86k5OsleV5BVmD91UeMUmwEpyKGOwYEs8f5XKkeJOwt6MSDFqqaUbJZaSjKJ7fkDnDAaBq00qGDhjvP~1Mi9xDafVUXKg7Y-mOjbdKsZl9z-ch3JPthE7F2uUEG97hjQwae7aRoNzuEgvPI4-Fe8eGZMIXzG5yZC2nX2ipMlnmRUPRPH3Tjh0qlCX1THqeM1sz1ErR7x33BpnHL-ODOFUU3Czkos2c7c4PuJtJg__";
+
+function Assistant() {
+  // State
+  const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  // Set timestamps once the component mounts on the client
+  // Effects
   useEffect(() => {
     setMessages(prevMessages => 
       prevMessages.map(msg => ({
@@ -30,6 +46,11 @@ export default function Assistant() {
     );
   }, []);
 
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Handlers
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
       const { scrollHeight, clientHeight } = chatContainerRef.current;
@@ -39,10 +60,6 @@ export default function Assistant() {
       });
     }
   };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,23 +82,17 @@ export default function Assistant() {
           "Authorization": `Bearer ${process.env.NEXT_PUBLIC_OPENROUTER_API_KEY}`,
           "Content-Type": "application/json",
           "HTTP-Referer": window.location.origin,
-          "X-Title": "Medical Assistant"
+          "X-Title": " Medical Assistant"
         },
         body: JSON.stringify({
           model: "sophosympatheia/rogue-rose-103b-v0.2:free",
           messages: [
-            {
-              role: "system",
-              content: "You are a medical AI assistant. Only provide health-related information and medical suggestions. For any non-medical questions, politely explain that you can only discuss health topics. Always remind users to consult healthcare professionals for specific medical advice."
-            },
+            { role: "system", content: SYSTEM_PROMPT },
             ...messages.map(msg => ({
               role: msg.role,
               content: msg.content
             })),
-            {
-              role: "user",
-              content: userMessage
-            }
+            { role: "user", content: userMessage }
           ]
         })
       });
@@ -91,9 +102,11 @@ export default function Assistant() {
       }
 
       const data = await response.json();
+      const trimmedResponse = data.choices[0].message.content.replace(/(?:\r\n|\r|\n)/g, ' ').trim();
+      const formattedResponse = formatResponse(trimmedResponse);
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: data.choices[0].message.content,
+        content: formattedResponse,
         timestamp: new Date().toLocaleTimeString()
       }]);
     } catch (error) {
@@ -108,45 +121,59 @@ export default function Assistant() {
     }
   };
 
+  const formatResponse = (response: string) => {
+    const sections = response.split('\n\n').map(section => {
+      const points = section.split('. ').map(point => `• ${point.trim()}`).join('\n');
+      return points;
+    });
+    return sections.join('\n\n');
+  };
+
+  // Render message component
+  const renderMessage = (message: Message, index: number) => (
+    <div
+      key={index}
+      className={`flex items-start gap-4 mb-6 ${message.role === 'assistant' ? 'flex-row' : 'flex-row-reverse'}`}
+    >
+      <div className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center ${
+        message.role === 'assistant' 
+          ? 'bg-gradient-to-r from-blue-500 to-purple-500' 
+          : 'bg-gradient-to-r from-purple-500 to-pink-500'
+      }`}>
+        {message.role === 'assistant' ? (
+          <img src={IRA_IMAGE} alt="AI Assistant" className="w-12 h-10 object-cover rounded-2xl" />
+        ) : (
+          <User  className="w-6 h-6 text-white" />
+        )}
+      </div>
+      <div className="flex-1 max-w-[80%]">
+        <div className={`px-6 py-4 rounded-2xl ${
+          message.role === 'assistant' 
+            ? 'bg-white/10 text-white/90' 
+            : 'bg-white/20 text-white'
+        }`}>
+          <pre className="whitespace-pre-wrap">{message.content}</pre>
+        </div>
+        <div className="mt-1 text-xs text-white/40 px-6">
+          {message.timestamp}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
+          {/* Chat Messages */}
           <div ref={chatContainerRef} className="h-[calc(100vh-320px)] overflow-y-auto p-6 scroll-smooth">
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex items-start gap-4 mb-6 ${message.role === 'assistant' ? 'flex-row' : 'flex-row-reverse'}`}
-              >
-                <div className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center ${
-                  message.role === 'assistant' 
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-500' 
-                    : 'bg-gradient-to-r from-purple-500 to-pink-500'
-                }`}>
-                  {message.role === 'assistant' ? (
-                    <Bot className="w-6 h-6 text-white" />
-                  ) : (
-                    <User className="w-6 h-6 text-white" />
-                  )}
-                </div>
-                <div className="flex-1 max-w-[80%]">
-                  <div className={`px-6 py-4 rounded-2xl ${
-                    message.role === 'assistant' 
-                      ? 'bg-white/10 text-white/90' 
-                      : 'bg-white/20 text-white'
-                  }`}>
-                    {message.content}
-                  </div>
-                  <div className="mt-1 text-xs text-white/40 px-6">
-                    {message.timestamp}
-                  </div>
-                </div>
-              </div>
-            ))}
+            {messages.map(renderMessage)}
+            
+            {/* Loading State */}
             {isLoading && (
               <div className="flex items-start gap-4 mb-6">
                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-                  <Bot className="w-6 h-6 text-white" />
+                  <img src={IRA_IMAGE} alt="AI Assistant" className="w-12 h-10 object-cover rounded-2xl" />
                 </div>
                 <div className="flex-1 max-w-[80%]">
                   <div className="px-6 py-4 rounded-2xl bg-white/10">
@@ -161,6 +188,7 @@ export default function Assistant() {
             <div ref={messagesEndRef} />
           </div>
 
+          {/* Input Area */}
           <div className="border-t border-white/20 bg-black/20 p-6">
             <form onSubmit={handleSubmit} className="flex gap-4 mb-4">
               <input
@@ -180,6 +208,7 @@ export default function Assistant() {
               </button>
             </form>
 
+            {/* Disclaimer */}
             <div className="flex items-start gap-3 text-white/60 text-sm bg-white/5 rounded-xl p-4">
               <ShieldAlert className="w-5 h-5 flex-shrink-0 mt-0.5" />
               <p>
@@ -192,3 +221,5 @@ export default function Assistant() {
     </div>
   );
 }
+
+export default Assistant;
