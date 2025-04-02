@@ -43,11 +43,7 @@ export default function ViewProfile() {
   const [step, setStep] = useState<Step>('aadhar');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    aadharNumber: '',
-    otp: '',
-    mobile: ''
-  });
+  const [formData, setFormData] = useState({ aadharNumber: '', otp: '', mobile: '' });
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [abhaCard, setAbhaCard] = useState<string | null>(null);
@@ -72,7 +68,6 @@ export default function ViewProfile() {
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    
     if (isResendDisabled && timer > 0) {
       interval = setInterval(() => {
         setTimer((prevTimer) => {
@@ -84,7 +79,6 @@ export default function ViewProfile() {
         });
       }, 1000);
     }
-
     return () => {
       if (interval) clearInterval(interval);
     };
@@ -102,10 +96,7 @@ export default function ViewProfile() {
       nextInput?.focus();
     }
 
-    setFormData({
-      ...formData,
-      aadharNumber: newParts.join('')
-    });
+    setFormData({ ...formData, aadharNumber: newParts.join('') });
   };
 
   const handleAadharSubmit = async (e: React.FormEvent) => {
@@ -532,7 +523,7 @@ export default function ViewProfile() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <User className="w-full h-full p-4 text-white/60" />
+                  <User  className="w-full h-full p-4 text-white/60" />
                 )}
               </div>
               <div>
