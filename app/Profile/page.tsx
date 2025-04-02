@@ -3,15 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Shield, Loader2, CheckCircle2, AlertCircle, User, Download } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
-import {
-  getAccessToken,
-  sendAadharOTP,
-  verifyAadharOTP,
-  getProfile,
-  getQrCode,
-  getJustProfile,
-  apiClient
-} from '../../lib/axios';
+import axios from 'axios';
 
 interface ProfileData {
   ABHANumber: string;
@@ -37,7 +29,17 @@ interface ProfileData {
 
 type Step = 'aadhar' | 'otp' | 'profile';
 
-export default function ProfileView() {
+const BASE_URL = "https://apiabdm.docbot.in";
+
+const apiClient = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+  },
+});
+
+export default function ViewProfile() {
   const [step, setStep] = useState<Step>('aadhar');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +60,8 @@ export default function ProfileView() {
   useEffect(() => {
     const initializeToken = async () => {
       try {
-        await getAccessToken();
+        const response = await apiClient.get('/api/access-token');
+        sessionStorage.setItem('token', response.data.access_token);
       } catch (error) {
         toast.error('Failed to initialize session');
       }
@@ -114,7 +117,15 @@ export default function ProfileView() {
       const accessToken = sessionStorage.getItem('token');
       if (!accessToken) throw new Error('No access token found');
 
-      await sendAadharOTP(formData.aadharNumber, accessToken);
+      const response = await apiClient.post('/api/send-otp', {
+        aadhar: formData.aadharNumber,
+        accessToken
+      });
+
+      if (response.data.txnId) {
+        sessionStorage.setItem('txnId', response.data.txnId);
+      }
+
       setStep('otp');
       toast.success('OTP sent successfully!');
     } catch (error) {
@@ -133,41 +144,64 @@ export default function ProfileView() {
 
     try {
       const accessToken = sessionStorage.getItem('token');
-      if (!accessToken) throw new Error('No access token found');
+      const txnId = sessionStorage.getItem('txnId');
 
-      await verifyAadharOTP(
-        formData.aadharNumber,
-        formData.otp,
-        formData.mobile,
+      if (!accessToken || !txnId) throw new Error('Missing required session data');
+
+      const response = await apiClient.post('/api/verify-otp', {
+        txnId,
+        mobile: formData.mobile,
+        otp: formData.otp,
         accessToken
-      );
+      });
 
-      // Fetch profile data after successful verification
+      const { tokens, ABHAProfile } = response.data;
+
+      if (tokens) {
+        sessionStorage.setItem('X_Token', tokens.refreshToken);
+        sessionStorage.setItem('token', tokens.token);
+      }
+
+      if (ABHAProfile) {
+        sessionStorage.setItem('ABHAProfile', JSON.stringify(ABHAProfile));
+      }
+
+      // Fetch profile data
       const [profile, qrResponse, justProfile] = await Promise.all([
-        getProfile(),
-        getQrCode(),
-        getJustProfile()
+        apiClient.post('/api/profile/account', {
+          accessToken: tokens.token,
+          'X_Token': tokens.refreshToken
+        }),
+        apiClient.post('/api/profile/qr', {
+          accessToken: tokens.token,
+          'X_Token': tokens.refreshToken
+        }),
+        apiClient.post('/api/profile', {
+          accessToken: tokens.token,
+          'X_Token': tokens.refreshToken
+        })
       ]);
 
-      // Handle profile photos
-      if (profile.profilePhoto && !profile.profilePhoto.startsWith('data:image')) {
-        profile.profilePhoto = `data:image/jpeg;base64,${profile.profilePhoto}`;
+      // Handle profile data
+      const profileData = profile.data;
+      if (profileData.profilePhoto && !profileData.profilePhoto.startsWith('data:image')) {
+        profileData.profilePhoto = `data:image/jpeg;base64,${profileData.profilePhoto}`;
       }
-      if (profile.kycPhoto && !profile.kycPhoto.startsWith('data:image')) {
-        profile.kycPhoto = `data:image/jpeg;base64,${profile.kycPhoto}`;
+      if (profileData.kycPhoto && !profileData.kycPhoto.startsWith('data:image')) {
+        profileData.kycPhoto = `data:image/jpeg;base64,${profileData.kycPhoto}`;
       }
 
       // Handle QR code
-      if (qrResponse && qrResponse.qrCode) {
-        setQrCode(`data:image/png;base64,${qrResponse.qrCode}`);
+      if (qrResponse.data && qrResponse.data.qrCode) {
+        setQrCode(`data:image/png;base64,${qrResponse.data.qrCode}`);
       }
 
       // Handle ABHA Card
-      if (justProfile.image) {
-        setAbhaCard(`data:image/png;base64,${justProfile.image}`);
+      if (justProfile.data.image) {
+        setAbhaCard(`data:image/png;base64,${justProfile.data.image}`);
       }
 
-      setProfileData(profile);
+      setProfileData(profileData);
       setStep('profile');
       toast.success('Verification successful!');
     } catch (error) {
@@ -195,7 +229,11 @@ export default function ProfileView() {
       const accessToken = sessionStorage.getItem('token');
       if (!accessToken) throw new Error('No access token found');
 
-      await sendAadharOTP(formData.aadharNumber, accessToken);
+      await apiClient.post('/api/send-otp', {
+        aadhar: formData.aadharNumber,
+        accessToken
+      });
+      
       setResendAttempts(prev => prev + 1);
       setIsResendDisabled(true);
       setTimer(60);
@@ -230,7 +268,25 @@ export default function ProfileView() {
     }
   };
 
- if (step === 'aadhar') {
+  const InfoItem: React.FC<{
+    label: string;
+    value: string;
+    verified?: boolean;
+  }> = ({ label, value, verified }) => (
+    <div className="bg-white/5 rounded-xl p-4 hover:bg-white/10 transition-colors">
+      <p className="text-white/60 text-sm mb-1">{label}</p>
+      <div className="flex items-center">
+        <p className="text-white text-lg">{value}</p>
+        {verified !== undefined && (
+          <span className={`ml-2 text-sm ${verified ? 'text-green-400' : 'text-red-400'}`}>
+            {verified ? '✓ Verified' : '✗ Not Verified'}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+
+  if (step === 'aadhar') {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900">
         <div className="max-w-4xl mx-auto px-4 py-12">
@@ -626,21 +682,3 @@ export default function ProfileView() {
 
   return null;
 }
-
-const InfoItem: React.FC<{
-  label: string;
-  value: string;
-  verified?: boolean;
-}> = ({ label, value, verified }) => (
-  <div className="bg-white/5 rounded-xl p-4 hover:bg-white/10 transition-colors">
-    <p className="text-white/60 text-sm mb-1">{label}</p>
-    <div className="flex items-center">
-      <p className="text-white text-lg">{value}</p>
-      {verified !== undefined && (
-        <span className={`ml-2 text-sm ${verified ? 'text-green-400' : 'text-red-400'}`}>
-          {verified ? '✓ Verified' : '✗ Not Verified'}
-        </span>
-      )}
-    </div>
-  </div>
-);

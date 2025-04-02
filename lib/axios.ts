@@ -5,7 +5,7 @@ const BASE_URL = "apiabdm.docbot.in";
 const isBrowser = typeof window !== 'undefined';
 
 export const apiClient = axios.create({
-  baseURL: `//${BASE_URL}`,
+  baseURL: `https://${BASE_URL}`,
   headers: {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
