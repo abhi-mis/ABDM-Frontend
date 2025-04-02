@@ -230,217 +230,233 @@ export default function ProfileView() {
     }
   };
 
-  if (step === 'aadhar') {
+ if (step === 'aadhar') {
     return (
-      <div className="max-w-4xl mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
-        >
-          <div className="relative inline-block">
-            <div className="bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 transform transition-transform hover:scale-110 hover:rotate-3">
-              <Shield className="text-white w-12 h-12" />
-            </div>
-          </div>
-
-          <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 text-transparent bg-clip-text">
-            Enter Your Aadhar Details
-          </h2>
-          <p className="text-xl text-white/80 max-w-2xl mx-auto">
-            Please provide your 12-digit Aadhar number for verification
-          </p>
-        </motion.div>
-
-        <motion.form
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          onSubmit={handleAadharSubmit}
-          className="space-y-8"
-        >
-          <div className="relative bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
-            <label className="block text-white/90 text-lg font-medium mb-4">
-              Aadhar Number
-            </label>
-            <div className="flex gap-4 items-center">
-              {aadharParts.map((part, index) => (
-                <input
-                  key={index}
-                  type="text"
-                  id={`aadhar-${index}`}
-                  value={part}
-                  onChange={(e) => handleAadharChange(index, e.target.value)}
-                  maxLength={4}
-                  placeholder="0000"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/50 focus:border-purple-500 focus:ring-purple-500 transition-all duration-300 text-center text-lg"
-                  disabled={isLoading}
-                />
-              ))}
-            </div>
-          </div>
-
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-center text-red-400 bg-red-500/10 p-3 rounded-lg"
-            >
-              <AlertCircle className="w-5 h-5 mr-2" />
-              {error}
-            </motion.div>
-          )}
-
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            type="submit"
-            disabled={isLoading || formData.aadharNumber.length !== 12}
-            className="w-full relative group px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white disabled:opacity-50 transition-all duration-300"
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900">
+        <div className="max-w-4xl mx-auto px-4 py-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-xl opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500"></div>
-            <span className="relative flex items-center justify-center">
-              {isLoading ? (
-                <>
-                  <Loader2 className="animate-spin mr-2 h-5 w-5" />
-                  Sending OTP...
-                </>
-              ) : (
-                'Continue'
-              )}
-            </span>
-          </motion.button>
-        </motion.form>
+            <div className="relative inline-block">
+              <div className="bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 transform transition-transform hover:scale-110 hover:rotate-3">
+                <Shield className="text-white w-12 h-12" />
+              </div>
+            </div>
+
+            <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 text-transparent bg-clip-text">
+              Enter Your Aadhar Details
+            </h2>
+            <p className="text-xl text-white/80 max-w-2xl mx-auto">
+              Please provide your 12-digit Aadhar number for verification
+            </p>
+          </motion.div>
+
+          <motion.form
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            onSubmit={handleAadharSubmit}
+            className="space-y-8"
+          >
+            <div className="relative bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
+              <label className="block text-white/90 text-lg font-medium mb-4">
+                Aadhar Number
+              </label>
+              <div className="flex gap-4 items-center">
+                {aadharParts.map((part, index) => (
+                  <input
+                    key={index}
+                    type="text"
+                    id={`aadhar-${index}`}
+                    value={part}
+                    onChange={(e) => handleAadharChange(index, e.target.value)}
+                    maxLength={4}
+                    placeholder="0000"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/50 focus:border-purple-500 focus:ring-purple-500 transition-all duration-300 text-center text-lg"
+                    disabled={isLoading}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center text-red-400 bg-red-500/10 p-3 rounded-lg"
+              >
+                <AlertCircle className="w-5 h-5 mr-2" />
+                {error}
+              </motion.div>
+            )}
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="submit"
+              disabled={isLoading || formData.aadharNumber.length !== 12}
+              className="w-full relative group px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white disabled:opacity-50 transition-all duration-300"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-xl opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500"></div>
+              <span className="relative flex items-center justify-center">
+                {isLoading ? (
+                  <>
+                    <Loader2 className="animate-spin mr-2 h-5 w-5" />
+                    Sending OTP...
+                  </>
+                ) : (
+                  'Continue'
+                )}
+              </span>
+            </motion.button>
+          </motion.form>
+        </div>
       </div>
     );
   }
 
   if (step === 'otp') {
     return (
-      <div className="max-w-4xl mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
-        >
-          <div className="relative inline-block">
-            <div className="bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 transform transition-transform hover:scale-110 hover:rotate-3">
-              <Shield className="text-white w-12 h-12" />
-            </div>
-          </div>
-
-          <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 text-transparent bg-clip-text">
-            Verify Your Identity
-          </h2>
-          <p className="text-xl text-white/80 max-w-2xl mx-auto">
-            Enter the OTP sent to your registered mobile number
-          </p>
-        </motion.div>
-
-        <motion.form
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          onSubmit={handleOtpSubmit}
-          className="space-y-8"
-        >
-          <div className="space-y-6 bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
-            <div className="relative">
-              <label className="block text-white/90 text-sm font-medium mb-2">
-                Mobile Number for ABHA Updates
-              </label>
-              <input
-                type="tel"
-                value={formData.mobile}
-                onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-                placeholder="Enter your 10-digit mobile number"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/50 focus:border-purple-500 focus:ring-purple-500 transition-all duration-300"
-                pattern="\d{10}"
-                maxLength={10}
-                required
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="relative">
-              <label className="block text-white/90 text-sm font-medium mb-2">
-                Enter OTP
-              </label>
-              <input
-                type="text"
-                value={formData.otp}
-                onChange={(e) => setFormData({ ...formData, otp: e.target.value })}
-                placeholder="Enter 6-digit OTP"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/50 focus:border-purple-500 focus:ring-purple-500 transition-all duration-300"
-                pattern="\d{6}"
-                maxLength={6}
-                required
-                disabled={isLoading}
-              />
-            </div>
-          </div>
-
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-center text-red-400 bg-red-500/10 p-3 rounded-lg"
-            >
-              <AlertCircle className="w-5 h-5 mr-2" />
-              {error}
-            </motion.div>
-          )}
-
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            type="submit"
-            disabled={isLoading}
-            className="w-full relative group px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white disabled:opacity-50 transition-all duration-300"
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900">
+        <div className="max-w-4xl mx-auto px-4 py-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-xl opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500"></div>
-            <span className="relative flex items-center justify-center">
-              {isLoading ? (
-                <>
-                  <Loader2 className="animate-spin mr-2 h-5 w-5" />
-                  Verifying...
-                </>
-              ) : (
-                'Verify & Continue'
-              )}
-            </span>
-          </motion.button>
+            <div className="relative inline-block">
+              <div className="bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 transform transition-transform hover:scale-110 hover:rotate-3">
+                <Shield className="text-white w-12 h-12" />
+              </div>
+            </div>
 
-          <div className="mt-4 text-center space-y-4">
-            {isResendDisabled && (
+            <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 text-transparent bg-clip-text">
+              Verify Your Identity
+            </h2>
+            <p className="text-xl text-white/80 max-w-2xl mx-auto">
+              Enter the OTP sent to your registered mobile number
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="mb-8 p-6 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-2xl border border-white/10 backdrop-blur-lg"
+          >
+            <div className="flex items-center justify-center text-white/80">
+              <CheckCircle2 className="w-5 h-5 mr-2 text-green-400" />
+              <p>OTP sent to your registered mobile number</p>
+            </div>
+          </motion.div>
+
+          <motion.form
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            onSubmit={handleOtpSubmit}
+            className="space-y-8"
+          >
+            <div className="space-y-6 bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
+              <div className="relative">
+                <label className="block text-white/90 text-sm font-medium mb-2">
+                  Mobile Number for ABHA Updates
+                </label>
+                <input
+                  type="tel"
+                  value={formData.mobile}
+                  onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+                  placeholder="Enter your 10-digit mobile number"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/50 focus:border-purple-500 focus:ring-purple-500 transition-all duration-300"
+                  pattern="\d{10}"
+                  maxLength={10}
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="relative">
+                <label className="block text-white/90 text-sm font-medium mb-2">
+                  Enter OTP
+                </label>
+                <input
+                  type="text"
+                  value={formData.otp}
+                  onChange={(e) => setFormData({ ...formData, otp: e.target.value })}
+                  placeholder="Enter 6-digit OTP"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/50 focus:border-purple-500 focus:ring-purple-500 transition-all duration-300"
+                  pattern="\d{6}"
+                  maxLength={6}
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+
+            {error && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-lg font-semibold text-white/90"
+                className="flex items-center text-red-400 bg-red-500/10 p-3 rounded-lg"
               >
-                Resend available in: {timer}s
+                <AlertCircle className="w-5 h-5 mr-2" />
+                {error}
               </motion.div>
             )}
-            
+
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={handleResendOtp}
-              className={`px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white transition-all duration-300 ${isResendDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-              disabled={isLoading || isResendDisabled || resendAttempts >= 2}
+              type="submit"
+              disabled={isLoading}
+              className="w-full relative group px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white disabled:opacity-50 transition-all duration-300"
             >
-              {resendAttempts >= 2 ? 'Maximum attempts reached' : 'Resend OTP'}
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-xl opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500"></div>
+              <span className="relative flex items-center justify-center">
+                {isLoading ? (
+                  <>
+                    <Loader2 className="animate-spin mr-2 h-5 w-5" />
+                    Verifying...
+                  </>
+                ) : (
+                  'Verify & Continue'
+                )}
+              </span>
             </motion.button>
-            
-            <p className="text-sm text-white/70">
-              {resendAttempts >= 2 
-                ? 'You have used all available resend attempts.' 
-                : `${2 - resendAttempts} resend attempts remaining`}
-            </p>
-          </div>
-        </motion.form>
+
+            <div className="mt-4 text-center space-y-4">
+              {isResendDisabled && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-lg font-semibold text-white/90"
+                >
+                  Resend available in: {timer}s
+                </motion.div>
+              )}
+              
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleResendOtp}
+                className={`px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white transition-all duration-300 ${isResendDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={isLoading || isResendDisabled || resendAttempts >= 2}
+              >
+                {resendAttempts >= 2 ? 'Maximum attempts reached' : 'Resend OTP'}
+              </motion.button>
+              
+              <p className="text-sm text-white/70">
+                {resendAttempts >= 2 
+                  ? 'You have used all available resend attempts.' 
+                  : `${2 - resendAttempts} resend attempts remaining`}
+              </p>
+            </div>
+          </motion.form>
+        </div>
       </div>
     );
   }
@@ -471,12 +487,12 @@ export default function ProfileView() {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex space-x-4 mb-8">
+            <div className="flex space-x-4 mb-8 overflow-x-auto pb-2">
               <button
                 onClick={() => setActiveTab('basic')}
-                className={`px-6 py-2 rounded-full transition-all ${
+                className={`px-6 py-2 rounded-full transition-all whitespace-nowrap ${
                   activeTab === 'basic' 
-                    ? 'bg-purple-600 text-white' 
+                    ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white' 
                     : 'bg-white/10 text-white/60 hover:bg-white/20'
                 }`}
               >
@@ -484,9 +500,9 @@ export default function ProfileView() {
               </button>
               <button
                 onClick={() => setActiveTab('address')}
-                className={`px-6 py-2 rounded-full transition-all ${
+                className={`px-6 py-2 rounded-full transition-all whitespace-nowrap ${
                   activeTab === 'address' 
-                    ? 'bg-purple-600 text-white' 
+                    ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white' 
                     : 'bg-white/10 text-white/60 hover:bg-white/20'
                 }`}
               >
@@ -494,9 +510,9 @@ export default function ProfileView() {
               </button>
               <button
                 onClick={() => setActiveTab('kyc')}
-                className={`px-6 py-2 rounded-full transition-all ${
+                className={`px-6 py-2 rounded-full transition-all whitespace-nowrap ${
                   activeTab === 'kyc' 
-                    ? 'bg-purple-600 text-white' 
+                    ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white' 
                     : 'bg-white/10 text-white/60 hover:bg-white/20'
                 }`}
               >
@@ -504,9 +520,9 @@ export default function ProfileView() {
               </button>
               <button
                 onClick={() => setActiveTab('abha')}
-                className={`px-6 py-2 rounded-full transition-all ${
+                className={`px-6 py-2 rounded-full transition-all whitespace-nowrap ${
                   activeTab === 'abha' 
-                    ? 'bg-purple-600 text-white' 
+                    ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white' 
                     : 'bg-white/10 text-white/60 hover:bg-white/20'
                 }`}
               >
@@ -536,7 +552,7 @@ export default function ProfileView() {
                         />
                         <button
                           onClick={handleDownloadQrCode}
-                          className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 transition-colors rounded-lg text-white mt-4"
+                          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:opacity-90 transition-opacity rounded-lg text-white mt-4"
                         >
                           <Download className="w-5 h-5" />
                           Download QR Code
@@ -584,7 +600,7 @@ export default function ProfileView() {
                   <div className="flex justify-end">
                     <button
                       onClick={handleDownloadAbhaCard}
-                      className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 transition-colors rounded-lg text-white"
+                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:opacity-90 transition-opacity rounded-lg text-white"
                     >
                       <Download className="w-5 h-5" />
                       Download ABHA Card
@@ -616,7 +632,7 @@ const InfoItem: React.FC<{
   value: string;
   verified?: boolean;
 }> = ({ label, value, verified }) => (
-  <div className="bg-white/5 rounded-xl p-4">
+  <div className="bg-white/5 rounded-xl p-4 hover:bg-white/10 transition-colors">
     <p className="text-white/60 text-sm mb-1">{label}</p>
     <div className="flex items-center">
       <p className="text-white text-lg">{value}</p>

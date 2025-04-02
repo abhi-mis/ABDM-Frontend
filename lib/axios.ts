@@ -5,7 +5,7 @@ const BASE_URL = "apiabdm.docbot.in";
 const isBrowser = typeof window !== 'undefined';
 
 export const apiClient = axios.create({
-  baseURL: `//${BASE_URL}`,
+  baseURL: `https://${BASE_URL}`,
   headers: {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
@@ -62,9 +62,7 @@ export const verifyAadharOTP = async (aadharNumber: string, otp: string, mobile:
     const { tokens, ABHAProfile } = response.data;
     
     if (tokens && isBrowser) {
-      // Store the refresh token as X_Token header value
       sessionStorage.setItem('X_Token', tokens.refreshToken);
-      // Store the access token
       sessionStorage.setItem('token', tokens.token);
     }
     
@@ -102,11 +100,10 @@ export const getProfile = async () => {
 
   const response = await apiClient.post('/api/profile/account', {
     accessToken,
-    'X_Token': xToken // Send as X_Token in payload
+    'X_Token': xToken
   });
   return response.data;
 };
-
 
 export const getQrCode = async () => {
   if (!isBrowser) {
@@ -120,13 +117,12 @@ export const getQrCode = async () => {
     throw new Error('Authentication tokens not found');
   }
 
-    const response = await apiClient.post('/api/profile/qr', {
-      accessToken,
-      'X_Token': xToken // Send as X_Token in payload
-    });
-    return response.data;
+  const response = await apiClient.post('/api/profile/qr', {
+    accessToken,
+    'X_Token': xToken
+  });
+  return response.data;
 };
-  
 
 export const getJustProfile = async () => {
   if (!isBrowser) {
@@ -142,7 +138,7 @@ export const getJustProfile = async () => {
 
   const response = await apiClient.post('/api/profile', {
     accessToken,
-    'X_Token': xToken // Send as X_Token in payload
+    'X_Token': xToken
   });
   return response.data;
 };
